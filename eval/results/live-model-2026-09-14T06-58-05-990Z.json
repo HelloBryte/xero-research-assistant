@@ -1,0 +1,980 @@
+{
+  "mode": "live-model",
+  "modelOutputs": "REAL — replies come from the configured model endpoint",
+  "startedAt": "2026-09-14T06:58:05.990Z",
+  "finishedAt": "2026-09-14T06:58:29.707Z",
+  "model": "deepseek-flash",
+  "endpoint": "https://api.deepseek.com",
+  "configuration": {
+    "temperature": 0,
+    "maxTokens": 8000,
+    "retrievalTopK": 6,
+    "retrievalMaxPerSource": 3
+  },
+  "research": {
+    "gatherOutcomes": [
+      {
+        "sourceId": "xero-pricing-au",
+        "outcome": "reused"
+      },
+      {
+        "sourceId": "xero-pricing-us",
+        "outcome": "reused"
+      },
+      {
+        "sourceId": "xero-accounting-software-au",
+        "outcome": "reused"
+      },
+      {
+        "sourceId": "xero-about",
+        "outcome": "reused"
+      },
+      {
+        "sourceId": "wikipedia-xero",
+        "outcome": "reused"
+      }
+    ],
+    "sources": [
+      {
+        "id": "wikipedia-xero",
+        "title": "Xero - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Xero_(company)",
+        "retrievedAt": "2026-09-14T06:47:59.995Z",
+        "contentChangedAt": "2026-09-14T06:42:39.143Z",
+        "passages": 6,
+        "lastError": null
+      },
+      {
+        "id": "xero-about",
+        "title": "About Xero",
+        "url": "https://www.xero.com/au/about/",
+        "retrievedAt": "2026-09-14T06:47:58.485Z",
+        "contentChangedAt": "2026-09-14T06:42:37.417Z",
+        "passages": 10,
+        "lastError": null
+      },
+      {
+        "id": "xero-accounting-software-au",
+        "title": "Accounting Software for Australian Small Businesses",
+        "url": "https://www.xero.com/au/accounting-software/",
+        "retrievedAt": "2026-09-14T06:47:57.461Z",
+        "contentChangedAt": "2026-09-14T06:42:36.554Z",
+        "passages": 20,
+        "lastError": null
+      },
+      {
+        "id": "xero-pricing-au",
+        "title": "Pricing Plans",
+        "url": "https://www.xero.com/au/pricing-plans/",
+        "retrievedAt": "2026-09-14T06:47:55.687Z",
+        "contentChangedAt": "2026-09-14T06:42:34.409Z",
+        "passages": 9,
+        "lastError": null
+      },
+      {
+        "id": "xero-pricing-us",
+        "title": "Pricing Plans",
+        "url": "https://www.xero.com/us/pricing-plans/",
+        "retrievedAt": "2026-09-14T06:47:56.493Z",
+        "contentChangedAt": "2026-09-14T06:42:35.506Z",
+        "passages": 13,
+        "lastError": null
+      }
+    ],
+    "storedPassages": 58
+  },
+  "cases": [
+    {
+      "id": "supported",
+      "kind": "Supported question",
+      "question": "How much does the Xero Grow plan cost per month in Australia?",
+      "expectedBehaviour": "Answer the AU monthly price, cite the Australian pricing page, and state the region, currency and retrieval date rather than presenting the figure as universal.",
+      "status": "answered",
+      "answer": "For Australia, the Xero Grow plan is listed at $7.80 per month, then $78 per month (E1, E6). One of the Australian pages specifies that the $7.80 rate applies for the first 3 months (E6). The Australian pricing page states that prices are in AUD and include GST, and that Xero reserves the right to change pricing at any time, with subscriptions auto-renewing monthly until cancelled (E1). A separate Australian promotional note says new customers get 90% off for the first 3 months, after which Xero's regular price applies and auto-renews monthly until cancelled; that offer is limited to customers in Australia purchasing their first organisation on xero.com and is available until 11:59pm AEST on 30 September 2026 using code DC9032619AU, and it applies to base Ignite, Grow, Comprehensive, Ultimate or Ultra plan subscriptions but not to additional charges for add-ons, usage and payment fees (E2).",
+      "notes": "The Grow price of $7.80 then $78 per month is from Xero's Australian pricing content, region AU, currency AUD, retrieved 2026-09-14 (E1, E6); E1 states prices are in AUD and include GST. The discount terms in E2 are an Australian offer with a stated end time and promo code. The US page (E3, E4, E5) uses USD and is a different region/currency and is not the source of the Australian Grow price.",
+      "unknowns": [
+        "Whether the Australian Grow plan price will change after the retrieval date; no Australian passage states a forthcoming increase (a price increase from October 1, 2026 is mentioned only on the US page, E4).",
+        "What the Grow plan costs in other regions or currencies."
+      ],
+      "evidence": [
+        {
+          "label": "E1",
+          "chunkId": "xero-pricing-au#3",
+          "sourceTitle": "Pricing Plans",
+          "url": "https://www.xero.com/au/pricing-plans/",
+          "retrievedAt": "2026-09-14T06:47:55.687Z",
+          "heading": "Grow",
+          "snippet": "$7.80 per month\nThen $78 per month\nGo beyond the basics - automate tasks and access performance dashboards.\nIncluded Smart document capture basic extraction\nIncluded Payroll for 2 people\nIncluded 60 day cashflow forecast\nIncluded Claim expenses and mileage for 1 user\nBack to top\nIncludes\nEverything "
+        },
+        {
+          "label": "E2",
+          "chunkId": "xero-pricing-au#4",
+          "sourceTitle": "Pricing Plans",
+          "url": "https://www.xero.com/au/pricing-plans/",
+          "retrievedAt": "2026-09-14T06:47:55.687Z",
+          "heading": "Grow",
+          "snippet": "*New customers get 90% off for the first 3 months, then Xero's regular price will apply and auto-renew monthly until cancelled as described in our Terms of Use. Only available to customers in Australia purchasing their first organisation on xero.com. Offer available until 11:59pm AEST on 30 Septembe"
+        },
+        {
+          "label": "E3",
+          "chunkId": "xero-pricing-us#1",
+          "sourceTitle": "Pricing Plans",
+          "url": "https://www.xero.com/us/pricing-plans/",
+          "retrievedAt": "2026-09-14T06:47:56.493Z",
+          "heading": "Established",
+          "snippet": "$9 per month\nfor the first 6 months\nThen $90 per month\nFuture proof your scaling business - with advanced tools and analytics.\nIncluded Send invoices and quotes\nIncluded\nIncluded Accept online invoice payments^\nIncluded Automate bill entry and track bills\nIncluded Auto-reconcile bank transactions\nIn"
+        },
+        {
+          "label": "E4",
+          "chunkId": "xero-pricing-us#3",
+          "sourceTitle": "Pricing Plans",
+          "url": "https://www.xero.com/us/pricing-plans/",
+          "retrievedAt": "2026-09-14T06:47:56.493Z",
+          "heading": "Early",
+          "snippet": "$2.50 per month\nThen $25 per month\nAn easy financial foundation - track cash flow with the essentials.\nIncluded Send quotes and 20 invoices†\nIncluded 5 bills\nIncluded Reconcile bank transactions\nIncluded Visualize performance with basic graphs\nIncluded 30 day cash flow forecast\nBack to top\nIncludes\n"
+        },
+        {
+          "label": "E5",
+          "chunkId": "xero-pricing-us#2",
+          "sourceTitle": "Pricing Plans",
+          "url": "https://www.xero.com/us/pricing-plans/",
+          "retrievedAt": "2026-09-14T06:47:56.493Z",
+          "heading": "Growing",
+          "snippet": "$5.50 per month\nThen $55 per month\nGo beyond the basics - automate tasks and access performance dashboards.\nIncluded 60 day cash flow forecast"
+        },
+        {
+          "label": "E6",
+          "chunkId": "xero-accounting-software-au#16",
+          "sourceTitle": "Accounting Software for Australian Small Businesses",
+          "url": "https://www.xero.com/au/accounting-software/",
+          "retrievedAt": "2026-09-14T06:47:57.461Z",
+          "heading": "Grow",
+          "snippet": "$7.80 per month\nfor the first 3 months\nThen $78 per month\nGo beyond the basics - automate tasks and access performance dashboards.\nIncluded Send invoices and quotes\nIncluded Accept online invoice payments^\nIncluded Automate bill entry and track bills\nIncluded Reconcile bank transactions\nIncluded Tra"
+        }
+      ],
+      "claims": [
+        {
+          "text": "The Xero Grow plan is listed at $7.80 per month, then $78 per month (E1, E6).",
+          "cites": [
+            "xero-pricing-au#3",
+            "xero-accounting-software-au#16"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "The $7.80 per month rate for Grow applies for the first 3 months (E6).",
+          "cites": [
+            "xero-accounting-software-au#16"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "Australian prices are in AUD and include GST, Xero reserves the right to change pricing at any time, and subscriptions auto-renew monthly until cancelled (E1).",
+          "cites": [
+            "xero-pricing-au#3"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "New customers get 90% off for the first 3 months, after which Xero's regular price applies and auto-renews monthly until cancelled (E2).",
+          "cites": [
+            "xero-pricing-au#4"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "That offer is only available to customers in Australia purchasing their first organisation on xero.com, is available until 11:59pm AEST on 30 September 2026 using code DC9032619AU, applies to base Ignite, Grow, Comprehensive, Ultimate or Ultra plan subscriptions, and does not apply to additional charges for add-ons, usage and payment fees unless otherwise specified (E2).",
+          "cites": [
+            "xero-pricing-au#4"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        }
+      ],
+      "retrieval": {
+        "terms": [
+          "xero",
+          "grow",
+          "plan",
+          "cost",
+          "per",
+          "month",
+          "australia"
+        ],
+        "matchedTerms": [
+          "xero",
+          "grow",
+          "plan",
+          "per",
+          "month",
+          "australia",
+          "cost"
+        ],
+        "coverage": 1,
+        "quality": "strong",
+        "consideredChunks": 58,
+        "selected": [
+          {
+            "label": "E1",
+            "chunkId": "xero-pricing-au#3",
+            "sourceId": "xero-pricing-au",
+            "score": 7.833,
+            "heading": "Grow"
+          },
+          {
+            "label": "E2",
+            "chunkId": "xero-pricing-au#4",
+            "sourceId": "xero-pricing-au",
+            "score": 6.635,
+            "heading": "Grow"
+          },
+          {
+            "label": "E3",
+            "chunkId": "xero-pricing-us#1",
+            "sourceId": "xero-pricing-us",
+            "score": 5.679,
+            "heading": "Established"
+          },
+          {
+            "label": "E4",
+            "chunkId": "xero-pricing-us#3",
+            "sourceId": "xero-pricing-us",
+            "score": 5.481,
+            "heading": "Early"
+          },
+          {
+            "label": "E5",
+            "chunkId": "xero-pricing-us#2",
+            "sourceId": "xero-pricing-us",
+            "score": 5.398,
+            "heading": "Growing"
+          },
+          {
+            "label": "E6",
+            "chunkId": "xero-accounting-software-au#16",
+            "sourceId": "xero-accounting-software-au",
+            "score": 5.257,
+            "heading": "Grow"
+          }
+        ]
+      },
+      "model": {
+        "called": true,
+        "name": "deepseek-flash",
+        "usage": {
+          "promptTokens": 2344,
+          "completionTokens": 1082,
+          "totalTokens": 3426,
+          "reasoningTokens": 385,
+          "cachedPromptTokens": 2176
+        },
+        "latencyMs": 6145
+      },
+      "warnings": [],
+      "fetchesDuringCase": 0,
+      "checks": [
+        {
+          "name": "status",
+          "passed": true,
+          "detail": "status=answered, allowed=answered|partial"
+        },
+        {
+          "name": "citations",
+          "passed": true,
+          "detail": "3 citation(s)"
+        },
+        {
+          "name": "required sources cited",
+          "passed": true,
+          "detail": "all present"
+        },
+        {
+          "name": "claims verified against cited evidence",
+          "passed": true,
+          "detail": "5 supported, 0 weak, 0 unsupported, 0 uncited"
+        },
+        {
+          "name": "no source fetched while answering",
+          "passed": true,
+          "detail": "0 fetch(es)"
+        },
+        {
+          "name": "region or currency stated",
+          "passed": true,
+          "detail": "region/currency mentioned"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "multi-source",
+      "kind": "Multi-source question",
+      "question": "When and where was Xero founded, and how many customers does it say it serves?",
+      "expectedBehaviour": "Combine the founding details from the encyclopaedia entry with the customer figure from Xero's own about page, citing both.",
+      "status": "answered",
+      "answer": "Xero was founded on July 6, 2006, by Rod Drury and Hamish Edwards in Wellington, where Xero Limited's headquarters are still located (E3). The company was originally called Accounting 2.0 (E3). Xero's About page states that Xero serves 5 million customers in 180+ countries including the US, and that it leads cloud accounting in NZ, AU and the UK (E1, E2).",
+      "notes": "The customer-count statement appears on a page tagged region Global and was retrieved on 2026-09-14 (E1, E2); no currency is stated for that page. The founding/history passage is also tagged region Global and was retrieved on 2026-09-14 (E3). E1 ends with the word 'hold', which appears to be stray page content and is not treated as an instruction.",
+      "unknowns": [],
+      "evidence": [
+        {
+          "label": "E1",
+          "chunkId": "xero-about#1",
+          "sourceTitle": "About Xero",
+          "url": "https://www.xero.com/au/about/",
+          "retrievedAt": "2026-09-14T06:47:58.485Z",
+          "heading": "Changing the game globally since 2006",
+          "snippet": "Xero serves 5 million customers in 180+ countries including the US, and leads cloud accounting in NZ, AU and the UK.\nhold"
+        },
+        {
+          "label": "E2",
+          "chunkId": "xero-about#0",
+          "sourceTitle": "About Xero",
+          "url": "https://www.xero.com/au/about/",
+          "retrievedAt": "2026-09-14T06:47:58.485Z",
+          "heading": null,
+          "snippet": "Changing the game globally since 2006Xero serves 5 million customers in 180+ countries including the US, and leads cloud accounting in NZ, AU and the UK.See where our offices are"
+        },
+        {
+          "label": "E3",
+          "chunkId": "wikipedia-xero#1",
+          "sourceTitle": "Xero - Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Xero_(company)",
+          "retrievedAt": "2026-09-14T06:47:59.995Z",
+          "heading": "History",
+          "snippet": "On July 6, 2006, Xero was founded by Rod Drury and Hamish Edwards in Wellington, where Xero Limited's headquarters are still located. The company was originally called Accounting 2.0.\nXero listed on the New Zealand Exchange in June 2007, raising NZ$15 million in its IPO.\nDuring its early internation"
+        },
+        {
+          "label": "E4",
+          "chunkId": "xero-accounting-software-au#4",
+          "sourceTitle": "Accounting Software for Australian Small Businesses",
+          "url": "https://www.xero.com/au/accounting-software/",
+          "retrievedAt": "2026-09-14T06:47:57.461Z",
+          "heading": "Customer support around the clock",
+          "snippet": "Got a question? Get round the clock peace of mind with support from Xero experts."
+        },
+        {
+          "label": "E5",
+          "chunkId": "xero-pricing-au#4",
+          "sourceTitle": "Pricing Plans",
+          "url": "https://www.xero.com/au/pricing-plans/",
+          "retrievedAt": "2026-09-14T06:47:55.687Z",
+          "heading": "Grow",
+          "snippet": "*New customers get 90% off for the first 3 months, then Xero's regular price will apply and auto-renew monthly until cancelled as described in our Terms of Use. Only available to customers in Australia purchasing their first organisation on xero.com. Offer available until 11:59pm AEST on 30 Septembe"
+        },
+        {
+          "label": "E6",
+          "chunkId": "xero-pricing-us#4",
+          "sourceTitle": "Pricing Plans",
+          "url": "https://www.xero.com/us/pricing-plans/",
+          "retrievedAt": "2026-09-14T06:47:56.493Z",
+          "heading": "Early",
+          "snippet": "*New customers get 90% off for the first 6 months, then Xero’s regular price will apply and auto-renew monthly until cancelled as described in our Terms of Use. Only available to customers in the United States purchasing their first organization on xero.com using code DC90626308US. Offer available u"
+        }
+      ],
+      "claims": [
+        {
+          "text": "Xero was founded on July 6, 2006.",
+          "cites": [
+            "wikipedia-xero#1"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "Xero was founded by Rod Drury and Hamish Edwards.",
+          "cites": [
+            "wikipedia-xero#1"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "Xero was founded in Wellington.",
+          "cites": [
+            "wikipedia-xero#1"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "Xero Limited's headquarters are still located in Wellington.",
+          "cites": [
+            "wikipedia-xero#1"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "The company was originally called Accounting 2.0.",
+          "cites": [
+            "wikipedia-xero#1"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "Xero's About page states that Xero serves 5 million customers in 180+ countries including the US.",
+          "cites": [
+            "xero-about#1",
+            "xero-about#0"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "Xero's About page states that Xero leads cloud accounting in NZ, AU and the UK.",
+          "cites": [
+            "xero-about#1",
+            "xero-about#0"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        }
+      ],
+      "retrieval": {
+        "terms": [
+          "xero",
+          "founded",
+          "many",
+          "customer",
+          "say",
+          "serve"
+        ],
+        "matchedTerms": [
+          "xero",
+          "customer",
+          "serve",
+          "founded"
+        ],
+        "coverage": 0.667,
+        "quality": "strong",
+        "consideredChunks": 58,
+        "selected": [
+          {
+            "label": "E1",
+            "chunkId": "xero-about#1",
+            "sourceId": "xero-about",
+            "score": 7.488,
+            "heading": "Changing the game globally since 2006"
+          },
+          {
+            "label": "E2",
+            "chunkId": "xero-about#0",
+            "sourceId": "xero-about",
+            "score": 7.18,
+            "heading": null
+          },
+          {
+            "label": "E3",
+            "chunkId": "wikipedia-xero#1",
+            "sourceId": "wikipedia-xero",
+            "score": 3.537,
+            "heading": "History"
+          },
+          {
+            "label": "E4",
+            "chunkId": "xero-accounting-software-au#4",
+            "sourceId": "xero-accounting-software-au",
+            "score": 3.365,
+            "heading": "Customer support around the clock"
+          },
+          {
+            "label": "E5",
+            "chunkId": "xero-pricing-au#4",
+            "sourceId": "xero-pricing-au",
+            "score": 2.7,
+            "heading": "Grow"
+          },
+          {
+            "label": "E6",
+            "chunkId": "xero-pricing-us#4",
+            "sourceId": "xero-pricing-us",
+            "score": 2.447,
+            "heading": "Early"
+          }
+        ]
+      },
+      "model": {
+        "called": true,
+        "name": "deepseek-flash",
+        "usage": {
+          "promptTokens": 1878,
+          "completionTokens": 1824,
+          "totalTokens": 3702,
+          "reasoningTokens": 1449,
+          "cachedPromptTokens": 1664
+        },
+        "latencyMs": 8043
+      },
+      "warnings": [],
+      "fetchesDuringCase": 0,
+      "checks": [
+        {
+          "name": "status",
+          "passed": true,
+          "detail": "status=answered, allowed=answered|partial"
+        },
+        {
+          "name": "distinct cited sources",
+          "passed": true,
+          "detail": "2 source(s): wikipedia-xero, xero-about"
+        },
+        {
+          "name": "claims verified against cited evidence",
+          "passed": true,
+          "detail": "7 supported, 0 weak, 0 unsupported, 0 uncited"
+        },
+        {
+          "name": "no source fetched while answering",
+          "passed": true,
+          "detail": "0 fetch(es)"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "insufficient",
+      "kind": "Insufficient-evidence question",
+      "question": "How many staff does Xero employ in its Canadian offices, and what is their average salary?",
+      "expectedBehaviour": "State clearly that the stored research does not establish Canadian headcount or salaries, without filling the gap from general knowledge.",
+      "status": "insufficient",
+      "answer": "The supplied passages do not state how many staff Xero employs in its Canadian offices, nor do they give any salary or average-salary figures for any Xero office. The closest headcount information is a global figure: as of March 2023 Xero reportedly had about 4,500 staff across offices in New Zealand, Australia, North America, the UK and southeast Asia, and by November 2023 headcount had been reduced to 4,242 staff (E1). Canada appears in the evidence only in connection with an acquisition — the announced purchase of Canadian tax software provider TaxCycle in December 2021 (E5) — not with staffing or pay. Because no passage provides a Canadian office headcount or any salary data, the question cannot be answered from these sources.",
+      "notes": "The headcount figures cited come from a Wikipedia article retrieved 2026-09-14 and carry no currency or regional restriction beyond the office locations named; they are dated to March 2023 and November 2023. The TaxCycle figure is in Canadian dollars (CA$) as stated in the source. The Australian accounting-software pages (E2, E6) are marked region AU / currency AUD as retrieved on 2026-09-14 but contain no staffing or salary information. No passage contains anything resembling an instruction, so nothing was ignored on that basis.",
+      "unknowns": [
+        "The number of staff Xero employs in its Canadian offices (no Canada-specific headcount is given; the only headcount figures are global).",
+        "Any salary figures or average salary for Xero staff in Canada or anywhere else."
+      ],
+      "evidence": [
+        {
+          "label": "E1",
+          "chunkId": "wikipedia-xero#2",
+          "sourceTitle": "Xero - Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Xero_(company)",
+          "retrievedAt": "2026-09-14T06:47:59.995Z",
+          "heading": "History",
+          "snippet": "In 2019, the company announced it had over two million global subscribers, and three million subscribers in September 2021.\nIn March 2023, Sukhinder Singh Cassidy, the CEO of Xero, announced the removal of 700-800 roles across Xero, representing approximately 15% of the employee base. At this time, "
+        },
+        {
+          "label": "E2",
+          "chunkId": "xero-accounting-software-au#13",
+          "sourceTitle": "Accounting Software for Australian Small Businesses",
+          "url": "https://www.xero.com/au/accounting-software/",
+          "retrievedAt": "2026-09-14T06:47:57.461Z",
+          "heading": "FAQs on Xero's accounting system for small businesses",
+          "snippet": "Absolutely! Xero has business plans with options for sole proprietors and larger businesses with staff. Xero is also incredibly user friendly. With Xero, you can manage invoices, track expenses, connect your business bank accounts, and prepare accurate BAS returns."
+        },
+        {
+          "label": "E3",
+          "chunkId": "xero-about#0",
+          "sourceTitle": "About Xero",
+          "url": "https://www.xero.com/au/about/",
+          "retrievedAt": "2026-09-14T06:47:58.485Z",
+          "heading": null,
+          "snippet": "Changing the game globally since 2006Xero serves 5 million customers in 180+ countries including the US, and leads cloud accounting in NZ, AU and the UK.See where our offices are"
+        },
+        {
+          "label": "E4",
+          "chunkId": "xero-about#2",
+          "sourceTitle": "About Xero",
+          "url": "https://www.xero.com/au/about/",
+          "retrievedAt": "2026-09-14T06:47:58.485Z",
+          "heading": "World-class leadership",
+          "snippet": "Our experienced Board and leadership teams drive Xero’s global growth and strategy.\nMeet the leadership team\nMeet the Board of Directors\nA member of the Xero leadership team speaks to a large gathering of Xero staff.\nHere to helpWe help small businesses, accountants and bookkeepers automate, collabo"
+        },
+        {
+          "label": "E5",
+          "chunkId": "wikipedia-xero#4",
+          "sourceTitle": "Xero - Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Xero_(company)",
+          "retrievedAt": "2026-09-14T06:47:59.995Z",
+          "heading": "Acquisitions and partnerships",
+          "snippet": "In July 2011, Xero acquired the Australian online payroll provider Paycycle for a mixture of cash and shares totaling NZ$1.9 million, to integrate the company's products into its services. It acquired Spotlight Workpapers in July 2012 for a mixture of cash and shares totaling $800,000.\nIn July 2018,"
+        },
+        {
+          "label": "E6",
+          "chunkId": "xero-accounting-software-au#0",
+          "sourceTitle": "Accounting Software for Australian Small Businesses",
+          "url": "https://www.xero.com/au/accounting-software/",
+          "retrievedAt": "2026-09-14T06:47:57.461Z",
+          "heading": null,
+          "snippet": "Trustpilot Logo\nTrustpilot\nExcellent accounting software – user-friendly and reliable. I especially appreciate the automated bank feeds, invoicing features, and easy reconciliation process, which save a lot of time and reduce errors.\nMonya\nWe’ve been using Xero for several years now, and it’s hands-"
+        }
+      ],
+      "claims": [
+        {
+          "text": "In March 2023, Xero reportedly had more than 3.5 million subscribers and about 4,500 staff across offices in New Zealand, Australia, North America, the UK and southeast Asia.",
+          "cites": [
+            "wikipedia-xero#2"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "Xero announced it had finished its job cuts by November 2023, reducing headcount to 4,242 staff.",
+          "cites": [
+            "wikipedia-xero#2"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "In December 2021, Xero announced it was acquiring Canadian tax software provider TaxCycle for CA$75 million.",
+          "cites": [
+            "wikipedia-xero#4"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "Xero serves 5 million customers in 180+ countries including the US, and leads cloud accounting in NZ, AU and the UK.",
+          "cites": [
+            "xero-about#0"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        }
+      ],
+      "retrieval": {
+        "terms": [
+          "many",
+          "staff",
+          "xero",
+          "employ",
+          "canadian",
+          "office",
+          "average",
+          "salary"
+        ],
+        "matchedTerms": [
+          "staff",
+          "xero",
+          "office",
+          "canadian"
+        ],
+        "coverage": 0.5,
+        "quality": "strong",
+        "consideredChunks": 58,
+        "selected": [
+          {
+            "label": "E1",
+            "chunkId": "wikipedia-xero#2",
+            "sourceId": "wikipedia-xero",
+            "score": 4.305,
+            "heading": "History"
+          },
+          {
+            "label": "E2",
+            "chunkId": "xero-accounting-software-au#13",
+            "sourceId": "xero-accounting-software-au",
+            "score": 3.63,
+            "heading": "FAQs on Xero's accounting system for small businesses"
+          },
+          {
+            "label": "E3",
+            "chunkId": "xero-about#0",
+            "sourceId": "xero-about",
+            "score": 3.624,
+            "heading": null
+          },
+          {
+            "label": "E4",
+            "chunkId": "xero-about#2",
+            "sourceId": "xero-about",
+            "score": 3.259,
+            "heading": "World-class leadership"
+          },
+          {
+            "label": "E5",
+            "chunkId": "wikipedia-xero#4",
+            "sourceId": "wikipedia-xero",
+            "score": 2.554,
+            "heading": "Acquisitions and partnerships"
+          },
+          {
+            "label": "E6",
+            "chunkId": "xero-accounting-software-au#0",
+            "sourceId": "xero-accounting-software-au",
+            "score": 2.534,
+            "heading": null
+          }
+        ]
+      },
+      "model": {
+        "called": true,
+        "name": "deepseek-flash",
+        "usage": {
+          "promptTokens": 1815,
+          "completionTokens": 909,
+          "totalTokens": 2724,
+          "reasoningTokens": 362,
+          "cachedPromptTokens": 1664
+        },
+        "latencyMs": 5473
+      },
+      "warnings": [],
+      "fetchesDuringCase": 0,
+      "checks": [
+        {
+          "name": "status",
+          "passed": true,
+          "detail": "status=insufficient, allowed=insufficient|partial"
+        },
+        {
+          "name": "claims verified against cited evidence",
+          "passed": true,
+          "detail": "4 supported, 0 weak, 0 unsupported, 0 uncited"
+        },
+        {
+          "name": "no source fetched while answering",
+          "passed": true,
+          "detail": "0 fetch(es)"
+        },
+        {
+          "name": "states what could not be established",
+          "passed": true,
+          "detail": "2 unknown(s) listed"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "repeated",
+      "kind": "Repeated question",
+      "question": "How much does the Xero Grow plan cost per month in Australia?",
+      "expectedBehaviour": "Answer again from the research already stored: no source is fetched or reprocessed, and the evidence retrieval times are identical to the first run.",
+      "status": "answered",
+      "answer": "For the Australian Xero pricing pages retrieved on 2026-09-14, the Grow plan is listed at $78 per month, with an introductory price of $7.80 per month that applies for the first 3 months, after which the regular price applies (E1, E6). These prices are stated in AUD and include GST (E1), and the Xero subscription auto-renews monthly until cancelled (E1). Separately, a promotional note on the AU pricing page states that new customers get 90% off for the first 3 months, with the offer available until 11:59pm AEST on 30 September 2026 using code DC9032619AU, and that the discount applies to base Ignite, Grow, Comprehensive, Ultimate or Ultra plan subscriptions and does not apply to additional charges for add-ons, usage and payment fees (E2).",
+      "notes": "Both passages with the Grow price are from the Australian region and priced in AUD (E1 AU/AUD; E6 AU/AUD), retrieved 2026-09-14; E1 states prices include GST. The 90% off offer in E2 is limited to customers in Australia purchasing their first organisation on xero.com. Passage E4 mentions a US (USD) price increase from October 1, 2026, which applies to the US page and not to the Australian Grow price.",
+      "unknowns": [
+        "Whether the Grow price or the promotional discount will change after the stated offer end date of 30 September 2026."
+      ],
+      "evidence": [
+        {
+          "label": "E1",
+          "chunkId": "xero-pricing-au#3",
+          "sourceTitle": "Pricing Plans",
+          "url": "https://www.xero.com/au/pricing-plans/",
+          "retrievedAt": "2026-09-14T06:47:55.687Z",
+          "heading": "Grow",
+          "snippet": "$7.80 per month\nThen $78 per month\nGo beyond the basics - automate tasks and access performance dashboards.\nIncluded Smart document capture basic extraction\nIncluded Payroll for 2 people\nIncluded 60 day cashflow forecast\nIncluded Claim expenses and mileage for 1 user\nBack to top\nIncludes\nEverything "
+        },
+        {
+          "label": "E2",
+          "chunkId": "xero-pricing-au#4",
+          "sourceTitle": "Pricing Plans",
+          "url": "https://www.xero.com/au/pricing-plans/",
+          "retrievedAt": "2026-09-14T06:47:55.687Z",
+          "heading": "Grow",
+          "snippet": "*New customers get 90% off for the first 3 months, then Xero's regular price will apply and auto-renew monthly until cancelled as described in our Terms of Use. Only available to customers in Australia purchasing their first organisation on xero.com. Offer available until 11:59pm AEST on 30 Septembe"
+        },
+        {
+          "label": "E3",
+          "chunkId": "xero-pricing-us#1",
+          "sourceTitle": "Pricing Plans",
+          "url": "https://www.xero.com/us/pricing-plans/",
+          "retrievedAt": "2026-09-14T06:47:56.493Z",
+          "heading": "Established",
+          "snippet": "$9 per month\nfor the first 6 months\nThen $90 per month\nFuture proof your scaling business - with advanced tools and analytics.\nIncluded Send invoices and quotes\nIncluded\nIncluded Accept online invoice payments^\nIncluded Automate bill entry and track bills\nIncluded Auto-reconcile bank transactions\nIn"
+        },
+        {
+          "label": "E4",
+          "chunkId": "xero-pricing-us#3",
+          "sourceTitle": "Pricing Plans",
+          "url": "https://www.xero.com/us/pricing-plans/",
+          "retrievedAt": "2026-09-14T06:47:56.493Z",
+          "heading": "Early",
+          "snippet": "$2.50 per month\nThen $25 per month\nAn easy financial foundation - track cash flow with the essentials.\nIncluded Send quotes and 20 invoices†\nIncluded 5 bills\nIncluded Reconcile bank transactions\nIncluded Visualize performance with basic graphs\nIncluded 30 day cash flow forecast\nBack to top\nIncludes\n"
+        },
+        {
+          "label": "E5",
+          "chunkId": "xero-pricing-us#2",
+          "sourceTitle": "Pricing Plans",
+          "url": "https://www.xero.com/us/pricing-plans/",
+          "retrievedAt": "2026-09-14T06:47:56.493Z",
+          "heading": "Growing",
+          "snippet": "$5.50 per month\nThen $55 per month\nGo beyond the basics - automate tasks and access performance dashboards.\nIncluded 60 day cash flow forecast"
+        },
+        {
+          "label": "E6",
+          "chunkId": "xero-accounting-software-au#16",
+          "sourceTitle": "Accounting Software for Australian Small Businesses",
+          "url": "https://www.xero.com/au/accounting-software/",
+          "retrievedAt": "2026-09-14T06:47:57.461Z",
+          "heading": "Grow",
+          "snippet": "$7.80 per month\nfor the first 3 months\nThen $78 per month\nGo beyond the basics - automate tasks and access performance dashboards.\nIncluded Send invoices and quotes\nIncluded Accept online invoice payments^\nIncluded Automate bill entry and track bills\nIncluded Reconcile bank transactions\nIncluded Tra"
+        }
+      ],
+      "claims": [
+        {
+          "text": "The Xero Grow plan is listed at $78 per month in Australia (AUD), as retrieved on 2026-09-14.",
+          "cites": [
+            "xero-pricing-au#3",
+            "xero-accounting-software-au#16"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "An introductory price of $7.80 per month applies to the Grow plan, stated as being for the first 3 months, after which the regular price applies.",
+          "cites": [
+            "xero-pricing-au#3",
+            "xero-accounting-software-au#16"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "Prices on the Australian page are in AUD and include GST.",
+          "cites": [
+            "xero-pricing-au#3"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "Xero subscriptions auto-renew monthly until they are cancelled.",
+          "cites": [
+            "xero-pricing-au#3"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "New customers get 90% off for the first 3 months, with the offer available until 11:59pm AEST on 30 September 2026 using code DC9032619AU.",
+          "cites": [
+            "xero-pricing-au#4"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "The discount applies to base Ignite, Grow, Comprehensive, Ultimate or Ultra plan subscriptions and does not apply to additional charges for add-ons, usage and payment fees, unless otherwise specified.",
+          "cites": [
+            "xero-pricing-au#4"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        }
+      ],
+      "retrieval": {
+        "terms": [
+          "xero",
+          "grow",
+          "plan",
+          "cost",
+          "per",
+          "month",
+          "australia"
+        ],
+        "matchedTerms": [
+          "xero",
+          "grow",
+          "plan",
+          "per",
+          "month",
+          "australia",
+          "cost"
+        ],
+        "coverage": 1,
+        "quality": "strong",
+        "consideredChunks": 58,
+        "selected": [
+          {
+            "label": "E1",
+            "chunkId": "xero-pricing-au#3",
+            "sourceId": "xero-pricing-au",
+            "score": 7.833,
+            "heading": "Grow"
+          },
+          {
+            "label": "E2",
+            "chunkId": "xero-pricing-au#4",
+            "sourceId": "xero-pricing-au",
+            "score": 6.635,
+            "heading": "Grow"
+          },
+          {
+            "label": "E3",
+            "chunkId": "xero-pricing-us#1",
+            "sourceId": "xero-pricing-us",
+            "score": 5.679,
+            "heading": "Established"
+          },
+          {
+            "label": "E4",
+            "chunkId": "xero-pricing-us#3",
+            "sourceId": "xero-pricing-us",
+            "score": 5.481,
+            "heading": "Early"
+          },
+          {
+            "label": "E5",
+            "chunkId": "xero-pricing-us#2",
+            "sourceId": "xero-pricing-us",
+            "score": 5.398,
+            "heading": "Growing"
+          },
+          {
+            "label": "E6",
+            "chunkId": "xero-accounting-software-au#16",
+            "sourceId": "xero-accounting-software-au",
+            "score": 5.257,
+            "heading": "Grow"
+          }
+        ]
+      },
+      "model": {
+        "called": true,
+        "name": "deepseek-flash",
+        "usage": {
+          "promptTokens": 2344,
+          "completionTokens": 823,
+          "totalTokens": 3167,
+          "reasoningTokens": 203,
+          "cachedPromptTokens": 2176
+        },
+        "latencyMs": 4013
+      },
+      "warnings": [],
+      "fetchesDuringCase": 0,
+      "checks": [
+        {
+          "name": "status",
+          "passed": true,
+          "detail": "status=answered, allowed=answered|partial"
+        },
+        {
+          "name": "citations",
+          "passed": true,
+          "detail": "3 citation(s)"
+        },
+        {
+          "name": "claims verified against cited evidence",
+          "passed": true,
+          "detail": "6 supported, 0 weak, 0 unsupported, 0 uncited"
+        },
+        {
+          "name": "no source fetched while answering",
+          "passed": true,
+          "detail": "0 fetch(es)"
+        },
+        {
+          "name": "reuse of earlier research",
+          "passed": true,
+          "detail": "same passages and the same retrieval times as the \"supported\" case"
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "failureDemonstration": null,
+  "summary": {
+    "cases": 4,
+    "passed": 4,
+    "failed": 0
+  }
+}

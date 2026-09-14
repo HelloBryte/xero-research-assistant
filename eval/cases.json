@@ -1,0 +1,56 @@
+{
+  "_comment": "Cases run through exactly the same retrieve-then-answer path as an ordinary question. Checks are mechanical assertions about the application's behaviour, not a model grading a model.",
+  "cases": [
+    {
+      "id": "supported",
+      "kind": "Supported question",
+      "question": "How much does the Xero Grow plan cost per month in Australia?",
+      "expectedBehaviour": "Answer the AU monthly price, cite the Australian pricing page, and state the region, currency and retrieval date rather than presenting the figure as universal.",
+      "checks": {
+        "status": ["answered", "partial"],
+        "minCitations": 1,
+        "requireSourceIds": ["xero-pricing-au"],
+        "maxUnsupportedClaims": 0,
+        "requireNoFetch": true,
+        "requireRegionContext": true
+      }
+    },
+    {
+      "id": "multi-source",
+      "kind": "Multi-source question",
+      "question": "When and where was Xero founded, and how many customers does it say it serves?",
+      "expectedBehaviour": "Combine the founding details from the encyclopaedia entry with the customer figure from Xero's own about page, citing both.",
+      "checks": {
+        "status": ["answered", "partial"],
+        "minDistinctCitedSources": 2,
+        "maxUnsupportedClaims": 0,
+        "requireNoFetch": true
+      }
+    },
+    {
+      "id": "insufficient",
+      "kind": "Insufficient-evidence question",
+      "question": "How many staff does Xero employ in its Canadian offices, and what is their average salary?",
+      "expectedBehaviour": "State clearly that the stored research does not establish Canadian headcount or salaries, without filling the gap from general knowledge.",
+      "checks": {
+        "status": ["insufficient", "partial"],
+        "maxUnsupportedClaims": 0,
+        "requireUnknowns": true,
+        "requireNoFetch": true
+      }
+    },
+    {
+      "id": "repeated",
+      "kind": "Repeated question",
+      "question": "How much does the Xero Grow plan cost per month in Australia?",
+      "expectedBehaviour": "Answer again from the research already stored: no source is fetched or reprocessed, and the evidence retrieval times are identical to the first run.",
+      "checks": {
+        "status": ["answered", "partial"],
+        "minCitations": 1,
+        "maxUnsupportedClaims": 0,
+        "requireNoFetch": true,
+        "requireSameEvidenceAs": "supported"
+      }
+    }
+  ]
+}

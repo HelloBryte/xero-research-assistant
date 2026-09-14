@@ -1,0 +1,43 @@
+{
+  "_comment": "Add, remove or replace a source by editing this file, then run `npm run gather` (new sources only) or `npm run refresh` (re-fetch everything).",
+  "sources": [
+    {
+      "id": "xero-pricing-au",
+      "url": "https://www.xero.com/au/pricing-plans/",
+      "label": "Xero pricing plans (Australia)",
+      "region": "AU",
+      "currency": "AUD",
+      "topic": "pricing and plan inclusions"
+    },
+    {
+      "id": "xero-pricing-us",
+      "url": "https://www.xero.com/us/pricing-plans/",
+      "label": "Xero pricing plans (United States)",
+      "region": "US",
+      "currency": "USD",
+      "topic": "pricing and plan inclusions"
+    },
+    {
+      "id": "xero-accounting-software-au",
+      "url": "https://www.xero.com/au/accounting-software/",
+      "label": "Xero accounting software (Australia)",
+      "region": "AU",
+      "currency": "AUD",
+      "topic": "product capabilities"
+    },
+    {
+      "id": "xero-about",
+      "url": "https://www.xero.com/about/",
+      "label": "About Xero",
+      "region": "Global",
+      "topic": "company overview and intended customers"
+    },
+    {
+      "id": "wikipedia-xero",
+      "url": "https://en.wikipedia.org/wiki/Xero_(company)",
+      "label": "Xero (company) — Wikipedia",
+      "region": "Global",
+      "topic": "history, business model, financials"
+    }
+  ]
+}

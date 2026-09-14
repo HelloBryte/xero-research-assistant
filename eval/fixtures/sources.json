@@ -1,0 +1,8 @@
+{
+  "_comment": "Source list used only by the offline evaluation. The URLs are served from eval/fixtures, never fetched.",
+  "sources": [
+    { "id": "xero-pricing-au", "url": "https://fixture.invalid/pricing-au", "label": "Plans and pricing (fixture, Australia)", "region": "AU", "currency": "AUD", "topic": "pricing" },
+    { "id": "xero-about", "url": "https://fixture.invalid/about", "label": "About the company (fixture)", "region": "Global", "topic": "company overview" },
+    { "id": "wikipedia-xero", "url": "https://fixture.invalid/encyclopedia", "label": "Company entry (fixture)", "region": "Global", "topic": "history and business model" }
+  ]
+}

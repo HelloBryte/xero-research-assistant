@@ -1,0 +1,10 @@
+node_modules/
+data/
+.env
+.env.local
+.DS_Store
+
+# Local assessment material and credentials — never commit
+DeepSeekAPIKey.md
+*.pdf
+APISocket.png

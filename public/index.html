@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Xero research assistant</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 0 auto; max-width: 60rem; padding: 1rem; line-height: 1.45; }
+      h1 { font-size: 1.3rem; }
+      h2 { font-size: 1.05rem; margin-top: 1.75rem; }
+      section { border: 1px solid #ccc; padding: 0.75rem; margin-bottom: 1rem; }
+      button { padding: 0.4rem 0.8rem; margin-right: 0.4rem; }
+      input[type='text'] { width: 100%; padding: 0.4rem; box-sizing: border-box; }
+      table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+      td, th { border: 1px solid #ddd; padding: 0.25rem 0.4rem; text-align: left; vertical-align: top; }
+      pre { background: #f4f4f4; padding: 0.5rem; overflow-x: auto; white-space: pre-wrap; font-size: 0.8rem; }
+      .verdict-supported { color: #0a6; }
+      .verdict-weak { color: #a70; }
+      .verdict-unsupported, .verdict-uncited, .error { color: #c00; }
+      .muted { color: #666; font-size: 0.85rem; }
+      details { margin: 0.3rem 0; }
+      .row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+    </style>
+  </head>
+  <body>
+    <h1>Xero research assistant</h1>
+    <p class="muted">
+      Answers are generated only from the public pages listed in <code>config/sources.json</code> and stored locally.
+      Every claim is checked against the passage it cites before it is shown.
+    </p>
+
+    <section>
+      <h2>Research</h2>
+      <div class="row">
+        <button id="gather">Gather (fetch only what is missing)</button>
+        <button id="refresh">Refresh (re-fetch all)</button>
+        <button id="rebuild">Refresh + rebuild passages</button>
+        <span id="research-busy" class="muted"></span>
+      </div>
+      <div id="status"></div>
+      <details><summary>Last run</summary><pre id="run-report">—</pre></details>
+    </section>
+
+    <section>
+      <h2>Ask</h2>
+      <form id="ask-form">
+        <input type="text" id="question" placeholder="e.g. How much does the Xero Grow plan cost per month in Australia?" />
+        <div class="row" style="margin-top: 0.5rem">
+          <button type="submit" id="ask">Ask</button>
+          <button type="button" id="preview">Show retrieved evidence only (no model call)</button>
+        </div>
+      </form>
+      <div id="answer"></div>
+    </section>
+
+    <section>
+      <h2>Activity</h2>
+      <p class="muted">
+        What was fetched, reused or reprocessed, and when a model was called. Compare a first run with a repeated one here.
+      </p>
+      <button id="reload-activity">Reload</button>
+      <pre id="activity">—</pre>
+    </section>
+
+    <script src="app.js"></script>
+  </body>
+</html>
