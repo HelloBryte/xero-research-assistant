@@ -25,6 +25,16 @@ const STOPWORDS = new Set([
 const K1 = 1.5;
 const B = 0.75;
 
+/**
+ * Weight for a query term matched only in a source's metadata rather than in
+ * the passage itself. Deliberately small and flat: source context should say
+ * "this source is relevant", not compete with the passage text. Folding the
+ * metadata into the passage's own term counts was tried first and inflated
+ * short, low-value passages, because a dozen metadata tokens dominate an
+ * eight-token passage.
+ */
+const CONTEXT_WEIGHT = 0.6;
+
 /** Lowercase, strip punctuation, drop stopwords and normalise simple plurals. */
 export function tokenize(text: string): string[] {
   const tokens: string[] = [];
@@ -76,8 +86,12 @@ export interface RetrievalResult {
 
 interface IndexedChunk {
   chunk: Chunk;
+  /** Term counts for the passage text and its heading. */
   termFrequency: Map<string, number>;
+  /** Token count of the passage text only, so metadata cannot skew length normalisation. */
   length: number;
+  /** Terms describing the source as a whole, scored as a separate weaker field. */
+  contextTerms: Set<string>;
 }
 
 export class RetrievalIndex {
@@ -85,15 +99,27 @@ export class RetrievalIndex {
   private readonly documentFrequency = new Map<string, number>();
   private readonly averageLength: number;
 
-  constructor(chunks: Chunk[]) {
+  /**
+   * @param contextBySourceId Source-level words — page title, region, currency,
+   *   topic — indexed with every passage of that source. Without this a passage
+   *   is only findable by words it repeats itself, and a priced plan card says
+   *   "$7.80 per month" without ever naming Xero, pricing or Australia: a
+   *   question asking for Australian pricing could not reach it at all. This is
+   *   the same metadata the passage carries when it is shown to the model.
+   */
+  constructor(chunks: Chunk[], contextBySourceId: ReadonlyMap<string, string> = new Map()) {
     for (const chunk of chunks) {
       const tokens = tokenize(`${chunk.heading ?? ''} ${chunk.text}`);
       const termFrequency = new Map<string, number>();
       for (const token of tokens) termFrequency.set(token, (termFrequency.get(token) ?? 0) + 1);
-      for (const term of termFrequency.keys()) {
+
+      const contextTerms = new Set(tokenize(contextBySourceId.get(chunk.sourceId) ?? ''));
+      // A term is "in" a document if either field holds it, so a metadata-only
+      // term still gets a meaningful inverse document frequency.
+      for (const term of new Set([...termFrequency.keys(), ...contextTerms])) {
         this.documentFrequency.set(term, (this.documentFrequency.get(term) ?? 0) + 1);
       }
-      this.documents.push({ chunk, termFrequency, length: tokens.length });
+      this.documents.push({ chunk, termFrequency, length: tokens.length, contextTerms });
     }
     const total = this.documents.reduce((sum, document) => sum + document.length, 0);
     this.averageLength = this.documents.length > 0 ? total / this.documents.length : 0;
@@ -117,12 +143,18 @@ export class RetrievalIndex {
       const matched: string[] = [];
       for (const term of terms) {
         const frequency = document.termFrequency.get(term);
-        if (!frequency) continue;
+        const inContext = document.contextTerms.has(term);
+        if (!frequency && !inContext) continue;
         matched.push(term);
+
         const df = this.documentFrequency.get(term) ?? 0;
         const idf = Math.log(1 + (this.documents.length - df + 0.5) / (df + 0.5));
-        const normalisation = 1 - B + (B * document.length) / (this.averageLength || 1);
-        score += idf * ((frequency * (K1 + 1)) / (frequency + K1 * normalisation));
+        if (frequency) {
+          const normalisation = 1 - B + (B * document.length) / (this.averageLength || 1);
+          score += idf * ((frequency * (K1 + 1)) / (frequency + K1 * normalisation));
+        } else {
+          score += CONTEXT_WEIGHT * idf;
+        }
       }
       if (score > 0) scored.push({ chunk: document.chunk, score, matchedTerms: matched });
     }
@@ -176,9 +208,23 @@ let cached: { version: string; index: RetrievalIndex } | null = null;
 export function getIndex(store: ResearchStore): RetrievalIndex {
   const version = store.corpusVersion();
   if (cached && cached.version === version) return cached.index;
-  const index = new RetrievalIndex(store.listChunks());
+  const index = new RetrievalIndex(store.listChunks(), sourceContext(store));
   cached = { version, index };
   return index;
+}
+
+/** Words that describe a source as a whole, indexed with each of its passages. */
+function sourceContext(store: ResearchStore): Map<string, string> {
+  return new Map(
+    store
+      .listSources()
+      .map((source) => [
+        source.id,
+        [source.title, source.label, source.region, source.currency, source.topic]
+          .filter(Boolean)
+          .join(' '),
+      ]),
+  );
 }
 
 export function resetIndexCache(): void {

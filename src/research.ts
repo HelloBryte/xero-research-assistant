@@ -149,6 +149,7 @@ async function processSource(
       url: source.url,
       finalUrl: response.finalUrl,
       title: extracted.title,
+      label: source.label,
       region: source.region,
       currency: source.currency,
       topic: source.topic,

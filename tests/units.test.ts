@@ -160,6 +160,25 @@ describe('retrieval', () => {
     expect(result.quality).toBe('none');
   });
 
+  it('finds a passage by its source, not only by words the passage repeats', () => {
+    // A priced plan card says "$7.80 per month" and never names the company,
+    // pricing or the country. Without source context indexed, a question asking
+    // for Australian pricing cannot reach it at all.
+    const plans = [
+      chunk('au#0', 'au', '$7.80 per month. Then $78 per month.', 'Grow'),
+      chunk('us#0', 'us', '$5.50 per month. Then $55 per month.', 'Growing'),
+    ];
+    const context = new Map([
+      ['au', 'Pricing Plans Xero pricing plans (Australia) AU AUD pricing and plan inclusions'],
+      ['us', 'Pricing Plans Xero pricing plans (United States) US USD pricing and plan inclusions'],
+    ]);
+
+    expect(new RetrievalIndex(plans).search('Xero pricing in Australia').results).toHaveLength(0);
+
+    const found = new RetrievalIndex(plans, context).search('Xero pricing in Australia');
+    expect(found.results[0]!.chunk.id).toBe('au#0');
+  });
+
   it('normalises plurals and keeps figures as searchable terms', () => {
     expect(tokenize('Invoices cost $78.50 per month')).toEqual(['invoice', 'cost', '78.50', 'per', 'month']);
   });

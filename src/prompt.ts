@@ -31,7 +31,9 @@ Reply with a single JSON object and nothing else:
   "notes": "region, currency, date or other context a reader needs; empty string if none"
 }
 
-"claims" must decompose the answer into its substantive factual statements, each with the labels that support it. Do not include a claim without evidence labels. Statements that are only framing ("here is what the sources say") do not need to be claims.`;
+"claims" must decompose the answer into its substantive factual statements about Xero, each with the labels that support it. Do not include a claim without evidence labels.
+
+A claim must be a statement about Xero that the cited passage contains. It must not be a statement about the evidence itself: what a passage says, omits, does not specify, or fails to establish is not a claim. Put anything the passages do not establish in "unknowns" instead. Framing ("here is what the sources say") is not a claim either.`;
 
 /** A passage the model is shown. The delimiters make the data boundary explicit. */
 function renderEvidence(item: EvidenceItem): string {

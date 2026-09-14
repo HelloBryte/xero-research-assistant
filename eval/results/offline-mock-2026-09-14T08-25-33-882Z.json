@@ -1,8 +1,8 @@
 {
   "mode": "offline-mock",
   "modelOutputs": "MOCKED — replies come from eval/run-eval.ts scriptedModel, not from a language model",
-  "startedAt": "2026-09-14T06:57:11.157Z",
-  "finishedAt": "2026-09-14T06:57:11.179Z",
+  "startedAt": "2026-09-14T08:25:33.882Z",
+  "finishedAt": "2026-09-14T08:25:33.905Z",
   "model": "scripted-offline-mock",
   "endpoint": "n/a (no network)",
   "configuration": {
@@ -31,8 +31,8 @@
         "id": "wikipedia-xero",
         "title": "Company entry (fixture)",
         "url": "https://fixture.invalid/encyclopedia",
-        "retrievedAt": "2026-09-14T06:57:11.166Z",
-        "contentChangedAt": "2026-09-14T06:57:11.166Z",
+        "retrievedAt": "2026-09-14T08:25:33.892Z",
+        "contentChangedAt": "2026-09-14T08:25:33.892Z",
         "passages": 2,
         "lastError": null
       },
@@ -40,8 +40,8 @@
         "id": "xero-about",
         "title": "About the company (fixture)",
         "url": "https://fixture.invalid/about",
-        "retrievedAt": "2026-09-14T06:57:11.165Z",
-        "contentChangedAt": "2026-09-14T06:57:11.165Z",
+        "retrievedAt": "2026-09-14T08:25:33.889Z",
+        "contentChangedAt": "2026-09-14T08:25:33.889Z",
         "passages": 2,
         "lastError": null
       },
@@ -49,8 +49,8 @@
         "id": "xero-pricing-au",
         "title": "Plans and pricing (fixture, Australia)",
         "url": "https://fixture.invalid/pricing-au",
-        "retrievedAt": "2026-09-14T06:57:11.158Z",
-        "contentChangedAt": "2026-09-14T06:57:11.158Z",
+        "retrievedAt": "2026-09-14T08:25:33.883Z",
+        "contentChangedAt": "2026-09-14T08:25:33.883Z",
         "passages": 3,
         "lastError": null
       }
@@ -63,19 +63,17 @@
       "kind": "Supported question",
       "question": "How much does the Xero Grow plan cost per month in Australia?",
       "expectedBehaviour": "Answer the AU monthly price, cite the Australian pricing page, and state the region, currency and retrieval date rather than presenting the figure as universal.",
-      "status": "partial",
-      "answer": "The Grow plan is listed at $7.80 per month, then $78 per month. (E1)",
+      "status": "answered",
+      "answer": "The Grow plan is listed at $7.80 per month, then $78 per month. (E1) Prices are in AUD and include GST. (E4)",
       "notes": "Region: AU, currency: AUD, as published on the pricing page at its retrieval date.",
-      "unknowns": [
-        "Prices are in AUD and include GST."
-      ],
+      "unknowns": [],
       "evidence": [
         {
           "label": "E1",
           "chunkId": "xero-pricing-au#0",
           "sourceTitle": "Plans and pricing (fixture, Australia)",
           "url": "https://fixture.invalid/pricing-au",
-          "retrievedAt": "2026-09-14T06:57:11.158Z",
+          "retrievedAt": "2026-09-14T08:25:33.883Z",
           "heading": "Grow",
           "snippet": "$7.80 per month\nThen $78 per month. Go beyond the basics with automated tasks and performance dashboards.\nPayroll for 2 people\n60 day cashflow forecast"
         },
@@ -84,7 +82,7 @@
           "chunkId": "xero-pricing-au#1",
           "sourceTitle": "Plans and pricing (fixture, Australia)",
           "url": "https://fixture.invalid/pricing-au",
-          "retrievedAt": "2026-09-14T06:57:11.158Z",
+          "retrievedAt": "2026-09-14T08:25:33.883Z",
           "heading": "Comprehensive",
           "snippet": "$10.70 per month\nThen $107 per month. Adds multi-currency and expense claims for 5 users."
         },
@@ -93,9 +91,18 @@
           "chunkId": "xero-about#1",
           "sourceTitle": "About the company (fixture)",
           "url": "https://fixture.invalid/about",
-          "retrievedAt": "2026-09-14T06:57:11.165Z",
+          "retrievedAt": "2026-09-14T08:25:33.889Z",
           "heading": "Who we help",
           "snippet": "We help small businesses, accountants and bookkeepers automate, collaborate and grow."
+        },
+        {
+          "label": "E4",
+          "chunkId": "xero-pricing-au#2",
+          "sourceTitle": "Plans and pricing (fixture, Australia)",
+          "url": "https://fixture.invalid/pricing-au",
+          "retrievedAt": "2026-09-14T08:25:33.883Z",
+          "heading": "Pricing terms",
+          "snippet": "Prices are in AUD and include GST. Subscriptions auto-renew monthly until cancelled."
         }
       ],
       "claims": [
@@ -103,6 +110,14 @@
           "text": "The Grow plan is listed at $7.80 per month, then $78 per month.",
           "cites": [
             "xero-pricing-au#0"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "Prices are in AUD and include GST.",
+          "cites": [
+            "xero-pricing-au#2"
           ],
           "verdict": "supported",
           "reason": "The cited evidence contains the claim’s figures and most of its wording."
@@ -120,10 +135,12 @@
         ],
         "matchedTerms": [
           "grow",
+          "plan",
           "per",
-          "month"
+          "month",
+          "australia"
         ],
-        "coverage": 0.429,
+        "coverage": 0.714,
         "quality": "strong",
         "consideredChunks": 7,
         "selected": [
@@ -131,14 +148,14 @@
             "label": "E1",
             "chunkId": "xero-pricing-au#0",
             "sourceId": "xero-pricing-au",
-            "score": 3.843,
+            "score": 4.835,
             "heading": "Grow"
           },
           {
             "label": "E2",
             "chunkId": "xero-pricing-au#1",
             "sourceId": "xero-pricing-au",
-            "score": 3.369,
+            "score": 4.361,
             "heading": "Comprehensive"
           },
           {
@@ -147,6 +164,13 @@
             "sourceId": "xero-about",
             "score": 1.371,
             "heading": "Who we help"
+          },
+          {
+            "label": "E4",
+            "chunkId": "xero-pricing-au#2",
+            "sourceId": "xero-pricing-au",
+            "score": 0.992,
+            "heading": "Pricing terms"
           }
         ]
       },
@@ -168,12 +192,12 @@
         {
           "name": "status",
           "passed": true,
-          "detail": "status=partial, allowed=answered|partial"
+          "detail": "status=answered, allowed=answered|partial"
         },
         {
           "name": "citations",
           "passed": true,
-          "detail": "1 citation(s)"
+          "detail": "2 citation(s)"
         },
         {
           "name": "required sources cited",
@@ -183,7 +207,7 @@
         {
           "name": "claims verified against cited evidence",
           "passed": true,
-          "detail": "1 supported, 0 weak, 0 unsupported, 0 uncited"
+          "detail": "2 supported, 0 weak, 0 unsupported, 0 uncited"
         },
         {
           "name": "no source fetched while answering",
@@ -213,7 +237,7 @@
           "chunkId": "xero-about#0",
           "sourceTitle": "About the company (fixture)",
           "url": "https://fixture.invalid/about",
-          "retrievedAt": "2026-09-14T06:57:11.165Z",
+          "retrievedAt": "2026-09-14T08:25:33.889Z",
           "heading": "Our reach",
           "snippet": "The company serves 5 million customers in 180+ countries and leads cloud accounting in NZ, AU and the UK."
         },
@@ -222,7 +246,7 @@
           "chunkId": "wikipedia-xero#0",
           "sourceTitle": "Company entry (fixture)",
           "url": "https://fixture.invalid/encyclopedia",
-          "retrievedAt": "2026-09-14T06:57:11.166Z",
+          "retrievedAt": "2026-09-14T08:25:33.892Z",
           "heading": "History",
           "snippet": "The company was founded on 6 July 2006 by two founders in Wellington, New Zealand, where its headquarters remain.\nIt listed on the New Zealand Exchange in June 2007."
         }
@@ -384,19 +408,17 @@
       "kind": "Repeated question",
       "question": "How much does the Xero Grow plan cost per month in Australia?",
       "expectedBehaviour": "Answer again from the research already stored: no source is fetched or reprocessed, and the evidence retrieval times are identical to the first run.",
-      "status": "partial",
-      "answer": "The Grow plan is listed at $7.80 per month, then $78 per month. (E1)",
+      "status": "answered",
+      "answer": "The Grow plan is listed at $7.80 per month, then $78 per month. (E1) Prices are in AUD and include GST. (E4)",
       "notes": "Region: AU, currency: AUD, as published on the pricing page at its retrieval date.",
-      "unknowns": [
-        "Prices are in AUD and include GST."
-      ],
+      "unknowns": [],
       "evidence": [
         {
           "label": "E1",
           "chunkId": "xero-pricing-au#0",
           "sourceTitle": "Plans and pricing (fixture, Australia)",
           "url": "https://fixture.invalid/pricing-au",
-          "retrievedAt": "2026-09-14T06:57:11.158Z",
+          "retrievedAt": "2026-09-14T08:25:33.883Z",
           "heading": "Grow",
           "snippet": "$7.80 per month\nThen $78 per month. Go beyond the basics with automated tasks and performance dashboards.\nPayroll for 2 people\n60 day cashflow forecast"
         },
@@ -405,7 +427,7 @@
           "chunkId": "xero-pricing-au#1",
           "sourceTitle": "Plans and pricing (fixture, Australia)",
           "url": "https://fixture.invalid/pricing-au",
-          "retrievedAt": "2026-09-14T06:57:11.158Z",
+          "retrievedAt": "2026-09-14T08:25:33.883Z",
           "heading": "Comprehensive",
           "snippet": "$10.70 per month\nThen $107 per month. Adds multi-currency and expense claims for 5 users."
         },
@@ -414,9 +436,18 @@
           "chunkId": "xero-about#1",
           "sourceTitle": "About the company (fixture)",
           "url": "https://fixture.invalid/about",
-          "retrievedAt": "2026-09-14T06:57:11.165Z",
+          "retrievedAt": "2026-09-14T08:25:33.889Z",
           "heading": "Who we help",
           "snippet": "We help small businesses, accountants and bookkeepers automate, collaborate and grow."
+        },
+        {
+          "label": "E4",
+          "chunkId": "xero-pricing-au#2",
+          "sourceTitle": "Plans and pricing (fixture, Australia)",
+          "url": "https://fixture.invalid/pricing-au",
+          "retrievedAt": "2026-09-14T08:25:33.883Z",
+          "heading": "Pricing terms",
+          "snippet": "Prices are in AUD and include GST. Subscriptions auto-renew monthly until cancelled."
         }
       ],
       "claims": [
@@ -424,6 +455,14 @@
           "text": "The Grow plan is listed at $7.80 per month, then $78 per month.",
           "cites": [
             "xero-pricing-au#0"
+          ],
+          "verdict": "supported",
+          "reason": "The cited evidence contains the claim’s figures and most of its wording."
+        },
+        {
+          "text": "Prices are in AUD and include GST.",
+          "cites": [
+            "xero-pricing-au#2"
           ],
           "verdict": "supported",
           "reason": "The cited evidence contains the claim’s figures and most of its wording."
@@ -441,10 +480,12 @@
         ],
         "matchedTerms": [
           "grow",
+          "plan",
           "per",
-          "month"
+          "month",
+          "australia"
         ],
-        "coverage": 0.429,
+        "coverage": 0.714,
         "quality": "strong",
         "consideredChunks": 7,
         "selected": [
@@ -452,14 +493,14 @@
             "label": "E1",
             "chunkId": "xero-pricing-au#0",
             "sourceId": "xero-pricing-au",
-            "score": 3.843,
+            "score": 4.835,
             "heading": "Grow"
           },
           {
             "label": "E2",
             "chunkId": "xero-pricing-au#1",
             "sourceId": "xero-pricing-au",
-            "score": 3.369,
+            "score": 4.361,
             "heading": "Comprehensive"
           },
           {
@@ -468,6 +509,13 @@
             "sourceId": "xero-about",
             "score": 1.371,
             "heading": "Who we help"
+          },
+          {
+            "label": "E4",
+            "chunkId": "xero-pricing-au#2",
+            "sourceId": "xero-pricing-au",
+            "score": 0.992,
+            "heading": "Pricing terms"
           }
         ]
       },
@@ -489,17 +537,17 @@
         {
           "name": "status",
           "passed": true,
-          "detail": "status=partial, allowed=answered|partial"
+          "detail": "status=answered, allowed=answered|partial"
         },
         {
           "name": "citations",
           "passed": true,
-          "detail": "1 citation(s)"
+          "detail": "2 citation(s)"
         },
         {
           "name": "claims verified against cited evidence",
           "passed": true,
-          "detail": "1 supported, 0 weak, 0 unsupported, 0 uncited"
+          "detail": "2 supported, 0 weak, 0 unsupported, 0 uncited"
         },
         {
           "name": "no source fetched while answering",
@@ -522,7 +570,7 @@
         "sourceId": "xero-pricing-au",
         "outcome": "failed",
         "error": "http_error",
-        "servingEvidenceFrom": "2026-09-14T06:57:11.158Z"
+        "servingEvidenceFrom": "2026-09-14T08:25:33.883Z"
       },
       {
         "sourceId": "xero-about",
@@ -540,22 +588,22 @@
     "evidenceSurvived": {
       "passagesBefore": 3,
       "passagesAfter": 3,
-      "retrievedAtBefore": "2026-09-14T06:57:11.158Z",
-      "retrievedAtAfter": "2026-09-14T06:57:11.158Z",
+      "retrievedAtBefore": "2026-09-14T08:25:33.883Z",
+      "retrievedAtAfter": "2026-09-14T08:25:33.883Z",
       "retrievalTimeUnchanged": true,
       "recordedError": {
-        "at": "2026-09-14T06:57:11.178Z",
+        "at": "2026-09-14T08:25:33.903Z",
         "kind": "http_error",
         "message": "Simulated 503 from the pricing page",
         "httpStatus": 503
       }
     },
     "answerAfterFailure": {
-      "status": "partial",
+      "status": "answered",
       "warnings": [
-        "Plans and pricing (fixture, Australia): the most recent refresh attempt failed (http_error at 2026-09-14T06:57:11.178Z); evidence shown was retrieved 2026-09-14T06:57:11.158Z"
+        "Plans and pricing (fixture, Australia): the most recent refresh attempt failed (http_error at 2026-09-14T08:25:33.903Z); evidence shown was retrieved 2026-09-14T08:25:33.883Z"
       ],
-      "citationsMarkedStale": 1
+      "citationsMarkedStale": 2
     }
   },
   "summary": {

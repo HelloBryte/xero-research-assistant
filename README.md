@@ -87,10 +87,20 @@ attaches labels.
 store. These questions turn on rare tokens — plan names, `$78`, `GST`, `AUD` — which IDF weights
 heavily for free, and BM25 adds no second service to keep in sync, no per-refresh embedding cost and
 no credentials for the offline path. Measured: 58 passages, search well under a millisecond, and the
-right passage ranked first in all four evaluation cases. **Assumption, not measurement:** that recall
-holds for questions beyond those four. **Would reconsider** if questions paraphrase rather than quote
-("what does it cost for a sole trader?" matches nothing lexically), or past ~10⁴ passages. Retrieval
-sits behind one `search` call, so swapping it does not touch the answer path.
+right passage ranked first in all four evaluation cases.
+
+Scoring is fielded. The passage text and heading are scored with BM25; the source's title, label,
+region, currency and topic are scored as a second, weaker field at a flat `CONTEXT_WEIGHT × idf`.
+That field is not decoration — a priced plan card reads "$7.80 per month" and never names Xero,
+pricing or Australia, so without it a question asking for Australian pricing could not retrieve the
+Australian price at all. Folding the metadata into the passage's own term counts was tried first and
+was worse: a dozen metadata tokens dominate an eight-token passage and pushed short, low-value
+passages to the top.
+
+**Assumption, not measurement:** that recall holds for questions beyond those tested. **Would
+reconsider** if questions paraphrase rather than quote ("what does it cost for a sole trader?"
+matches nothing lexically), or past ~10⁴ passages. Retrieval sits behind one `search` call, so
+swapping it does not touch the answer path.
 
 ### Decision 2 — verify the model's citations in application code
 
@@ -104,11 +114,15 @@ two real defects during development — a claim restating a retrieval date absen
 text, and inline `(E1)` markers being read as figures; both are fixed and covered by tests.
 **Would reconsider** for answers that legitimately paraphrase or aggregate, where word overlap is the
 wrong signal; entailment checking is the next step. The check is shallow by design: it cannot detect
-a claim that reverses the meaning of the evidence it cites.
+a claim that reverses the meaning of the evidence it cites, and it necessarily misreads a claim
+*about* the evidence ("that passage does not specify the introductory period"), which has low
+overlap by construction. Rather than loosen the check, the prompt now requires claims to be
+statements about Xero and sends anything the evidence does not establish to `unknowns`; a
+meta-statement that slips through is flagged rather than silently accepted.
 
 ## Tests and evaluation
 
-`npm test` — 43 vitest tests, no credentials or network. Reuse (a second gather makes zero fetches;
+`npm test` — 44 vitest tests, no credentials or network. Reuse (a second gather makes zero fetches;
 asking never fetches), refresh semantics (unchanged / reprocessed / forced rebuild), failure safety
 (a failed refresh keeps earlier evidence, keeps its retrieval time, and marks it), model failures
 (timeout and unparseable reply produce no answer), citation validation, claim verification, API-key
@@ -119,10 +133,10 @@ the behaviour under test is not.
 the same `ask` path as an ordinary question and writes JSON and Markdown to `eval/results/`. Each
 file states at the top whether its model outputs are real or mocked.
 
-- [`live-model-2026-09-14T06-58-05-990Z.md`](eval/results/live-model-2026-09-14T06-58-05-990Z.md) —
+- [`live-model-2026-09-14T08-27-35-147Z.md`](eval/results/live-model-2026-09-14T08-27-35-147Z.md) —
   **real model output.** `deepseek-flash`, temperature 0, run 2026-09-14; sources retrieved
-  2026-09-14T06:47Z. 4/4 cases passed every check.
-- [`offline-mock-2026-09-14T06-57-11-157Z.md`](eval/results/offline-mock-2026-09-14T06-57-11-157Z.md)
+  2026-09-14T08:23Z. 4/4 cases passed every check.
+- [`offline-mock-2026-09-14T08-25-33-882Z.md`](eval/results/offline-mock-2026-09-14T08-25-33-882Z.md)
   — **mocked model output** over synthetic fixtures, plus a demonstration that a failed refresh
   leaves stored evidence and its retrieval time untouched.
 

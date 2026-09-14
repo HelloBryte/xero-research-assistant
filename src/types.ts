@@ -48,7 +48,10 @@ export interface SourceRecord {
   id: string;
   url: string;
   finalUrl: string;
+  /** Title taken from the page itself. */
   title: string;
+  /** Human label from config/sources.json; indexed so a source is findable by how a reviewer describes it. */
+  label?: string;
   region?: string;
   currency?: string;
   topic?: string;
