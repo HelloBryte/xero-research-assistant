@@ -43,6 +43,8 @@ npm run cli -- log --tail 40                # fetched / reused / reprocessed / m
 npm test                                 # no credentials, no network
 npm run eval                             # live model, writes eval/results/
 npm run eval -- --offline                # scripted model over fixtures, no credentials
+npm run explore                          # 30-case exploratory sweep, writes eval/exploratory/results/
+npm run verify:sources                   # fact-check the answers against the live pages
 ```
 
 To add or replace a source, edit `config/sources.json`, then `npm run gather` (new sources only) or
@@ -122,21 +124,30 @@ meta-statement that slips through is flagged rather than silently accepted.
 
 ## Tests and evaluation
 
-`npm test` — 44 vitest tests, no credentials or network. Reuse (a second gather makes zero fetches;
+`npm test` — 59 vitest tests, no credentials or network. Reuse (a second gather makes zero fetches;
 asking never fetches), refresh semantics (unchanged / reprocessed / forced rebuild), failure safety
 (a failed refresh keeps earlier evidence, keeps its retrieval time, and marks it), model failures
 (timeout and unparseable reply produce no answer), citation validation, claim verification, API-key
-redaction, and that retrieved content cannot forge a prompt delimiter. External services are mocked;
-the behaviour under test is not.
+redaction, and that retrieved content cannot forge a prompt delimiter. `tests/regressions.test.ts`
+holds one test per defect found by exploratory testing, named after the defect. External services
+are mocked; the behaviour under test is not.
 
 `npm run eval` runs four cases — supported, multi-source, insufficient-evidence, repeated — through
 the same `ask` path as an ordinary question and writes JSON and Markdown to `eval/results/`. Each
 file states at the top whether its model outputs are real or mocked.
 
-- [`live-model-2026-09-14T08-34-56-831Z.md`](eval/results/live-model-2026-09-14T08-34-56-831Z.md) —
+`npm run explore` is the wider sweep that found most of the defects: 30 questions in 10 categories —
+pricing, product, company, multi-source, insufficient, region, freshness, reuse, adversarial and
+malformed input — through the same path again. `npm run verify:sources` then fetches the live pages
+and checks, independently of `src/extract.ts`, that the figures the answers quoted are really there:
+19 of 19 confirmed. See [`eval/exploratory/`](eval/exploratory/README.md), and
+[`eval/exploratory/FINDINGS.md`](eval/exploratory/FINDINGS.md) for every defect found, its root
+cause, its fix and its regression test.
+
+- [`live-model-2026-09-14T10-07-29-030Z.md`](eval/results/live-model-2026-09-14T10-07-29-030Z.md) —
   **real model output.** `deepseek-flash`, temperature 0, run 2026-09-14; sources retrieved
   2026-09-14T08:23Z. 4/4 cases passed every check.
-- [`offline-mock-2026-09-14T08-34-56-393Z.md`](eval/results/offline-mock-2026-09-14T08-34-56-393Z.md)
+- [`offline-mock-2026-09-14T10-07-28-622Z.md`](eval/results/offline-mock-2026-09-14T10-07-28-622Z.md)
   — **mocked model output** over synthetic fixtures, plus a demonstration that a failed refresh
   leaves stored evidence and its retrieval time untouched.
 

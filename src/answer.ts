@@ -14,6 +14,20 @@ import {
 
 export type AnswerStatus = 'answered' | 'partial' | 'insufficient';
 
+const REFUSAL_TEXT = {
+  no_research:
+    'No research has been gathered yet. Run the gather step before asking questions.',
+  no_query_terms:
+    'The question could not be searched: after removing punctuation and common words it left no ' +
+    'searchable term. Retrieval is word-based and indexes English page text, so a question written ' +
+    'in another script, or made only of emoji or common words, cannot be matched against the stored ' +
+    'research. This says nothing about what the research contains. Please rephrase in English using ' +
+    'specific words such as a plan name, a feature or a figure.',
+  no_match:
+    'The stored research contains no passage related to this question, so it cannot be answered from ' +
+    'the current evidence. Add a source covering this topic to config/sources.json and gather again.',
+} as const;
+
 export interface Citation {
   label: string;
   chunkId: string;
@@ -126,11 +140,21 @@ export async function ask(options: AskOptions): Promise<AnswerResult> {
     }
   }
 
-  // Nothing in the corpus matches: answer from application logic, and spend no
-  // model call establishing that there is nothing to answer from.
+  // Nothing to send: answer from application logic, and spend no model call
+  // establishing that there is nothing to answer from. The three reasons are
+  // reported separately, because telling a user the research does not cover
+  // their topic when the real cause was an unsearchable question is a false
+  // statement about the evidence.
   if (evidence.length === 0) {
-    run.event('answer_refused', 'no stored passage matched the question; no model call made', {
+    const reason: 'no_research' | 'no_query_terms' | 'no_match' =
+      store.listSources().length === 0
+        ? 'no_research'
+        : retrieval.terms.length === 0
+          ? 'no_query_terms'
+          : 'no_match';
+    run.event('answer_refused', `${reason}: no evidence was sent to the model`, {
       question,
+      reason,
       consideredChunks: retrieval.consideredChunks,
     });
     return {
@@ -138,11 +162,7 @@ export async function ask(options: AskOptions): Promise<AnswerResult> {
       question,
       askedAt,
       status: 'insufficient',
-      answer:
-        store.listSources().length === 0
-          ? 'No research has been gathered yet. Run the gather step before asking questions.'
-          : 'The stored research contains no passage related to this question, so it cannot be answered from the ' +
-            'current evidence. Add a source covering this topic to config/sources.json and gather again.',
+      answer: REFUSAL_TEXT[reason],
       claims: [],
       unknowns: [question],
       notes: '',
@@ -224,7 +244,11 @@ export async function ask(options: AskOptions): Promise<AnswerResult> {
         context: `${citation.sourceTitle} ${citation.url} retrieved ${citation.retrievedAt} ${citation.region ?? ''} ${citation.currency ?? ''}`,
       });
     }
-    claims.push({ text, citations, check: checkClaim(text, citedPassages) });
+    claims.push({
+      text,
+      citations,
+      check: checkClaim(text, citedPassages, { corpusVocabulary: index.vocabulary() }),
+    });
   }
 
   const grounding = summariseGrounding(claims.map((claim) => claim.check.verdict));

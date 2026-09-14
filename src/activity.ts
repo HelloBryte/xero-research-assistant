@@ -57,10 +57,14 @@ export class ActivityLog {
 
   /** Most recent events, newest last. */
   tail(limit = 50): ActivityEvent[] {
+    // `slice(-0)` is `slice(0)`, which returns everything: a limit of 0 or a
+    // negative limit arriving from a query string used to dump the whole log.
+    const count = Number.isFinite(limit) ? Math.max(0, Math.floor(limit)) : 0;
+    if (count === 0) return [];
     if (!existsSync(this.file)) return [];
     const lines = readFileSync(this.file, 'utf8').split('\n').filter(Boolean);
     const events: ActivityEvent[] = [];
-    for (const line of lines.slice(-limit)) {
+    for (const line of lines.slice(-count)) {
       try {
         events.push(JSON.parse(line) as ActivityEvent);
       } catch {

@@ -1,0 +1,222 @@
+{
+  "startedAt": "2026-09-14T10:04:10.923Z",
+  "finishedAt": "2026-09-14T10:04:19.910Z",
+  "method": "Each URL is fetched directly and tag-stripped by this script, not by src/extract.ts, so the check is independent of the extraction code it is checking.",
+  "pages": [
+    {
+      "sourceId": "xero-pricing-au",
+      "url": "https://www.xero.com/au/pricing-plans/",
+      "httpStatus": 200,
+      "error": null,
+      "storedRetrievedAt": "2026-09-14T08:30:17.319Z"
+    },
+    {
+      "sourceId": "xero-pricing-us",
+      "url": "https://www.xero.com/us/pricing-plans/",
+      "httpStatus": 200,
+      "error": null,
+      "storedRetrievedAt": "2026-09-14T08:30:18.157Z"
+    },
+    {
+      "sourceId": "xero-about",
+      "url": "https://www.xero.com/about/",
+      "httpStatus": 200,
+      "error": null,
+      "storedRetrievedAt": "2026-09-14T08:34:17.583Z"
+    },
+    {
+      "sourceId": "wikipedia-xero",
+      "url": "https://en.wikipedia.org/wiki/Xero_(company)",
+      "httpStatus": 200,
+      "error": null,
+      "storedRetrievedAt": "2026-09-14T08:30:21.589Z"
+    },
+    {
+      "sourceId": "xero-accounting-software-au",
+      "url": "https://www.xero.com/au/accounting-software/",
+      "httpStatus": 200,
+      "error": null,
+      "storedRetrievedAt": "2026-09-14T08:30:19.118Z"
+    }
+  ],
+  "facts": [
+    {
+      "sourceId": "xero-pricing-au",
+      "fact": "Grow is listed at $7.80 per month for the first 3 months",
+      "pattern": "7\\s*\\.?\\s*80",
+      "url": "https://www.xero.com/au/pricing-plans/",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    },
+    {
+      "sourceId": "xero-pricing-au",
+      "fact": "Grow reverts to $78 per month",
+      "pattern": "Then\\s*\\$?78\\s*per\\s*month",
+      "url": "https://www.xero.com/au/pricing-plans/",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    },
+    {
+      "sourceId": "xero-pricing-au",
+      "fact": "Comprehensive reverts to $107 per month",
+      "pattern": "Then\\s*\\$?107\\s*per\\s*month",
+      "url": "https://www.xero.com/au/pricing-plans/",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    },
+    {
+      "sourceId": "xero-pricing-au",
+      "fact": "Ultimate 10 reverts to $143 per month",
+      "pattern": "Then\\s*\\$?143\\s*per\\s*month",
+      "url": "https://www.xero.com/au/pricing-plans/",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    },
+    {
+      "sourceId": "xero-pricing-au",
+      "fact": "prices are in AUD and include GST",
+      "pattern": "in\\s*AUD\\s*and\\s*include\\s*GST",
+      "url": "https://www.xero.com/au/pricing-plans/",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    },
+    {
+      "sourceId": "xero-pricing-au",
+      "fact": "the new-customer offer is 90% off for the first 3 months",
+      "pattern": "90%\\s*off\\s*for\\s*the\\s*first\\s*3\\s*months",
+      "url": "https://www.xero.com/au/pricing-plans/",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    },
+    {
+      "sourceId": "xero-pricing-au",
+      "fact": "Grow includes payroll for 2 people",
+      "pattern": "Payroll\\s*for\\s*2\\s*people",
+      "url": "https://www.xero.com/au/pricing-plans/",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    },
+    {
+      "sourceId": "xero-pricing-us",
+      "fact": "Early reverts to $25 per month",
+      "pattern": "Then\\s*\\$?25\\s*per\\s*month",
+      "url": "https://www.xero.com/us/pricing-plans/",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    },
+    {
+      "sourceId": "xero-pricing-us",
+      "fact": "Growing reverts to $55 per month",
+      "pattern": "Then\\s*\\$?55\\s*per\\s*month",
+      "url": "https://www.xero.com/us/pricing-plans/",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    },
+    {
+      "sourceId": "xero-pricing-us",
+      "fact": "Established reverts to $90 per month",
+      "pattern": "Then\\s*\\$?90\\s*per\\s*month",
+      "url": "https://www.xero.com/us/pricing-plans/",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    },
+    {
+      "sourceId": "xero-pricing-us",
+      "fact": "US prices are listed in USD",
+      "pattern": "listed\\s*in\\s*USD",
+      "url": "https://www.xero.com/us/pricing-plans/",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    },
+    {
+      "sourceId": "xero-pricing-us",
+      "fact": "the US offer runs for the first 6 months",
+      "pattern": "90%\\s*off\\s*(your\\s*plan\\s*)?for\\s*(your\\s*)?(the\\s*)?first\\s*6\\s*months",
+      "url": "https://www.xero.com/us/pricing-plans/",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    },
+    {
+      "sourceId": "xero-about",
+      "fact": "Xero serves 5 million customers",
+      "pattern": "5\\s*million\\s*customers",
+      "url": "https://www.xero.com/about/",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    },
+    {
+      "sourceId": "xero-about",
+      "fact": "in 180+ countries",
+      "pattern": "180\\+?\\s*countries",
+      "url": "https://www.xero.com/about/",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    },
+    {
+      "sourceId": "wikipedia-xero",
+      "fact": "founded on 6 July 2006",
+      "pattern": "July\\s*6,?\\s*2006",
+      "url": "https://en.wikipedia.org/wiki/Xero_(company)",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    },
+    {
+      "sourceId": "wikipedia-xero",
+      "fact": "founded in Wellington, New Zealand",
+      "pattern": "Wellington,?\\s*New\\s*Zealand",
+      "url": "https://en.wikipedia.org/wiki/Xero_(company)",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    },
+    {
+      "sourceId": "wikipedia-xero",
+      "fact": "founded by Rod Drury and Hamish Edwards",
+      "pattern": "Rod\\s*Drury",
+      "url": "https://en.wikipedia.org/wiki/Xero_(company)",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    },
+    {
+      "sourceId": "wikipedia-xero",
+      "fact": "listed on the ASX as XRO",
+      "pattern": "ASX\\s*:?\\s*XRO",
+      "url": "https://en.wikipedia.org/wiki/Xero_(company)",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    },
+    {
+      "sourceId": "xero-accounting-software-au",
+      "fact": "Xero is ATO-certified for Single Touch Payroll",
+      "pattern": "Single\\s*Touch\\s*Payroll",
+      "url": "https://www.xero.com/au/accounting-software/",
+      "onLivePage": true,
+      "inStoredResearch": true,
+      "verdict": "confirmed"
+    }
+  ],
+  "summary": {
+    "facts": 19,
+    "confirmed": 19,
+    "storedOnly": 0,
+    "liveOnly": 0,
+    "missing": 0
+  }
+}

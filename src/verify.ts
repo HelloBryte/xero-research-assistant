@@ -44,7 +44,11 @@ const WEAK_OVERLAP = 0.35;
  * mismatched citations, and it cannot detect a claim that reverses the meaning
  * of the evidence it cites. Verdicts are reported, never silently corrected.
  */
-export function checkClaim(claim: string, citedChunks: CitedPassage[]): ClaimCheck {
+export function checkClaim(
+  claim: string,
+  citedChunks: CitedPassage[],
+  options: { corpusVocabulary?: ReadonlySet<string> } = {},
+): ClaimCheck {
   if (citedChunks.length === 0) {
     return {
       verdict: 'uncited',
@@ -69,7 +73,21 @@ export function checkClaim(claim: string, citedChunks: CitedPassage[]): ClaimChe
   const matchedFigures = claimFigures.filter((figure) => evidenceFigures.has(figure));
   const missingFigures = claimFigures.filter((figure) => !evidenceFigures.has(figure));
 
-  const claimTerms = [...new Set(tokenize(claimText))];
+  // Only words that some stored passage actually uses can be confirmed or
+  // denied by a stored passage. A claim like 'the plan information shown under
+  // the heading "Comprehensive" lists "Included Use multiple currencies"' is
+  // two thirds framing — "information", "shown", "heading", "lists" appear
+  // nowhere in the corpus — and counting that framing in the denominator
+  // pushed a verbatim-correct claim below the unsupported threshold. The
+  // trade-off is that an invented word outside the corpus no longer lowers the
+  // score by itself; invented figures are still caught above, and an invented
+  // statement still fails because its remaining words are absent from the
+  // cited passage.
+  const allClaimTerms = [...new Set(tokenize(claimText))];
+  const vocabulary = options.corpusVocabulary;
+  const verifiable = vocabulary ? allClaimTerms.filter((term) => vocabulary.has(term)) : allClaimTerms;
+  const claimTerms = verifiable.length > 0 ? verifiable : allClaimTerms;
+
   const evidenceTerms = new Set(tokenize(evidenceText));
   const shared = claimTerms.filter((term) => evidenceTerms.has(term));
   const overlap = claimTerms.length === 0 ? 0 : shared.length / claimTerms.length;

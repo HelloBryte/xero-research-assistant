@@ -16,7 +16,9 @@
     "status": "tsx src/cli.ts status",
     "eval": "tsx eval/run-eval.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "explore": "tsx eval/exploratory/run-exploratory.ts",
+    "verify:sources": "tsx eval/exploratory/verify-ground-truth.ts"
   },
   "dependencies": {
     "cheerio": "^1.0.0",

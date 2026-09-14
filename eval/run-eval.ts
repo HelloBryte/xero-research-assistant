@@ -149,7 +149,11 @@ const scriptedModel: ChatModel = async (messages: ChatMessage[]) => {
 function runChecks(
   testCase: EvalCase,
   result: AnswerResult,
-  context: { fetchesDuringCase: number; previous: Map<string, AnswerResult> },
+  context: {
+    fetchesDuringCase: number;
+    previous: Map<string, AnswerResult>;
+    retrievedAt: (chunkId: string) => string;
+  },
 ): CheckResult[] {
   const checks: CheckResult[] = [];
   const add = (name: string, passed: boolean, detail: string) => checks.push({ name, passed, detail });
@@ -198,17 +202,21 @@ function runChecks(
     if (!earlier) {
       add('reuse of earlier research', false, `case "${want.requireSameEvidenceAs}" did not run`);
     } else {
+      // Retrieval is deterministic; which passages the model chooses to cite is
+      // not, so reuse is asserted on the retrieved set and the retrieval time
+      // carried by each of those passages.
       const signature = (answer: AnswerResult) =>
-        answer.retrieval.selected.map((item) => item.chunkId).sort().join(',');
-      const times = (answer: AnswerResult) =>
-        [...new Set(answer.citations.map((citation) => citation.retrievedAt))].sort().join(',');
-      const same = signature(earlier) === signature(result) && times(earlier) === times(result);
+        answer.retrieval.selected
+          .map((item) => `${item.chunkId}@${context.retrievedAt(item.chunkId)}`)
+          .sort()
+          .join(',');
+      const same = signature(earlier) === signature(result);
       add(
         'reuse of earlier research',
         same,
         same
-          ? `same passages and the same retrieval times as the "${want.requireSameEvidenceAs}" case`
-          : `passages or retrieval times differ from the "${want.requireSameEvidenceAs}" case`,
+          ? `the same passages, each still carrying the retrieval time it had in the "${want.requireSameEvidenceAs}" case`
+          : `the retrieved passages or their retrieval times differ from the "${want.requireSameEvidenceAs}" case`,
       );
     }
   }
@@ -336,7 +344,11 @@ async function main(): Promise<number> {
       const result = await service.ask(testCase.question);
       const fetchesDuringCase = countFetches() - before;
       previous.set(testCase.id, result);
-      const checks = runChecks(testCase, result, { fetchesDuringCase, previous });
+      const checks = runChecks(testCase, result, {
+        fetchesDuringCase,
+        previous,
+        retrievedAt: (chunkId) => service.trace(chunkId)?.source.fetchedAt ?? '?',
+      });
       records.push({
         id: testCase.id,
         kind: testCase.kind,

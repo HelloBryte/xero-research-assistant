@@ -1,0 +1,100 @@
+{
+  "_comment": "Facts quoted by answers in the exploratory run, checked against the live pages. Deliberately independent of src/extract.ts: the checker fetches the URL itself and strips tags crudely, so a bug in our own extraction cannot make a wrong fact look right. Patterns are loose about whitespace because the pages render figures as separate elements.",
+  "facts": [
+    {
+      "sourceId": "xero-pricing-au",
+      "fact": "Grow is listed at $7.80 per month for the first 3 months",
+      "pattern": "7\\s*\\.?\\s*80"
+    },
+    {
+      "sourceId": "xero-pricing-au",
+      "fact": "Grow reverts to $78 per month",
+      "pattern": "Then\\s*\\$?78\\s*per\\s*month"
+    },
+    {
+      "sourceId": "xero-pricing-au",
+      "fact": "Comprehensive reverts to $107 per month",
+      "pattern": "Then\\s*\\$?107\\s*per\\s*month"
+    },
+    {
+      "sourceId": "xero-pricing-au",
+      "fact": "Ultimate 10 reverts to $143 per month",
+      "pattern": "Then\\s*\\$?143\\s*per\\s*month"
+    },
+    {
+      "sourceId": "xero-pricing-au",
+      "fact": "prices are in AUD and include GST",
+      "pattern": "in\\s*AUD\\s*and\\s*include\\s*GST"
+    },
+    {
+      "sourceId": "xero-pricing-au",
+      "fact": "the new-customer offer is 90% off for the first 3 months",
+      "pattern": "90%\\s*off\\s*for\\s*the\\s*first\\s*3\\s*months"
+    },
+    {
+      "sourceId": "xero-pricing-au",
+      "fact": "Grow includes payroll for 2 people",
+      "pattern": "Payroll\\s*for\\s*2\\s*people"
+    },
+    {
+      "sourceId": "xero-pricing-us",
+      "fact": "Early reverts to $25 per month",
+      "pattern": "Then\\s*\\$?25\\s*per\\s*month"
+    },
+    {
+      "sourceId": "xero-pricing-us",
+      "fact": "Growing reverts to $55 per month",
+      "pattern": "Then\\s*\\$?55\\s*per\\s*month"
+    },
+    {
+      "sourceId": "xero-pricing-us",
+      "fact": "Established reverts to $90 per month",
+      "pattern": "Then\\s*\\$?90\\s*per\\s*month"
+    },
+    {
+      "sourceId": "xero-pricing-us",
+      "fact": "US prices are listed in USD",
+      "pattern": "listed\\s*in\\s*USD"
+    },
+    {
+      "sourceId": "xero-pricing-us",
+      "fact": "the US offer runs for the first 6 months",
+      "pattern": "90%\\s*off\\s*(your\\s*plan\\s*)?for\\s*(your\\s*)?(the\\s*)?first\\s*6\\s*months"
+    },
+    {
+      "sourceId": "xero-about",
+      "fact": "Xero serves 5 million customers",
+      "pattern": "5\\s*million\\s*customers"
+    },
+    {
+      "sourceId": "xero-about",
+      "fact": "in 180+ countries",
+      "pattern": "180\\+?\\s*countries"
+    },
+    {
+      "sourceId": "wikipedia-xero",
+      "fact": "founded on 6 July 2006",
+      "pattern": "July\\s*6,?\\s*2006"
+    },
+    {
+      "sourceId": "wikipedia-xero",
+      "fact": "founded in Wellington, New Zealand",
+      "pattern": "Wellington,?\\s*New\\s*Zealand"
+    },
+    {
+      "sourceId": "wikipedia-xero",
+      "fact": "founded by Rod Drury and Hamish Edwards",
+      "pattern": "Rod\\s*Drury"
+    },
+    {
+      "sourceId": "wikipedia-xero",
+      "fact": "listed on the ASX as XRO",
+      "pattern": "ASX\\s*:?\\s*XRO"
+    },
+    {
+      "sourceId": "xero-accounting-software-au",
+      "fact": "Xero is ATO-certified for Single Touch Payroll",
+      "pattern": "Single\\s*Touch\\s*Payroll"
+    }
+  ]
+}

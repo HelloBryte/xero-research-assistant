@@ -1,14 +1,9 @@
-import { setDefaultAutoSelectFamilyAttemptTimeout } from 'node:net';
 import { config } from './config.js';
+import { configureConnectionTimeouts } from './net.js';
 import { isAllowed, parseRobots, type RobotsPolicy } from './robots.js';
 import type { FailureKind } from './types.js';
 
-// Node races IPv6 and IPv4 and gives the first family only 250ms by default.
-// On a connection where IPv6 is advertised but unreachable that budget expires
-// before the IPv4 attempt completes and the whole request fails as ETIMEDOUT.
-// Wikipedia reproduced this reliably during development; curl to the same
-// address succeeded, which is what made the cause clear.
-setDefaultAutoSelectFamilyAttemptTimeout(3_000);
+configureConnectionTimeouts();
 
 export class FetchFailure extends Error {
   constructor(

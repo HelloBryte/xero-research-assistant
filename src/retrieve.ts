@@ -18,12 +18,86 @@ const STOPWORDS = new Set([
   'did', 'do', 'does', 'for', 'from', 'get', 'had', 'has', 'have', 'how', 'i', 'if', 'in', 'into',
   'is', 'it', 'its', 'just', 'may', 'me', 'much', 'my', 'no', 'not', 'of', 'on', 'or', 'our', 'out',
   'over', 'should', 'so', 'some', 'such', 'than', 'that', 'the', 'their', 'them', 'then', 'there',
-  'these', 'they', 'this', 'those', 'to', 'up', 'use', 'was', 'we', 'were', 'what', 'when', 'where',
+  'these', 'they', 'this', 'those', 'to', 'up', 'us', 'use', 'was', 'we', 'were', 'what', 'when', 'where',
   'which', 'who', 'why', 'will', 'with', 'would', 'you', 'your',
 ]);
 
 const K1 = 1.5;
 const B = 0.75;
+
+/**
+ * Country shorthand a user types, mapped to the words that actually appear in
+ * page text and source metadata.
+ *
+ * This exists because "us" is both a country code and the most common English
+ * object pronoun. Lowercased, "the US" collided with "Tell us a little about
+ * your business", and BM25 ranked an Australian call-to-action above every US
+ * pricing passage. The pronoun is now a stopword, and the shorthand is matched
+ * case-sensitively on the raw query so only the country code expands.
+ */
+const REGION_SHORTHAND: [RegExp, string][] = [
+  [/\bU\.?S\.?A?\b/, 'united states america'],
+  [/\bUK\b/, 'united kingdom britain'],
+  [/\bAUS?\b/, 'australia australian'],
+  [/\bNZ\b/, 'new zealand'],
+];
+
+/** Region codes as stored in configuration, expanded for the index. */
+const REGION_WORDS: Record<string, string> = {
+  US: 'united states america',
+  UK: 'united kingdom britain',
+  AU: 'australia australian',
+  NZ: 'new zealand',
+};
+
+export function expandRegionShorthand(query: string): string {
+  const extra = REGION_SHORTHAND.filter(([pattern]) => pattern.test(query)).map(([, words]) => words);
+  return extra.length > 0 ? `${query} ${extra.join(' ')}` : query;
+}
+
+export function regionWords(region: string | undefined): string {
+  if (!region) return '';
+  return REGION_WORDS[region.toUpperCase()] ?? '';
+}
+
+/**
+ * Derived facets: a fact about a passage that its words do not state.
+ *
+ * A user asking "what's the cheapest plan?" uses a word that appears nowhere in
+ * the evidence, while the passages that answer it are exactly the ones quoting
+ * a recurring price. Without this, marketing copy that happens to repeat "plan"
+ * and "Xero" outranked every priced plan card, and the model was asked for a
+ * price with no price in front of it.
+ *
+ * One facet, deliberately. Each one is hand-written vocabulary and earns its
+ * place only where the mismatch is both common and mechanically detectable.
+ */
+const FACET_PRICE = 'facet:price';
+// A recurring price, not any monetary amount. Matching bare currency figures
+// also matched the encyclopaedia infobox's annual revenue, so a question about
+// what a plan costs pulled in company financials ahead of the plan cards.
+const RECURRING_PRICE = /[$\u20ac\u00a3\u00a5]\s?\d[\d,.]*\s*(?:per\s+(?:month|year|user|employee|person)|a\s+month|\/\s*(?:mo|month|yr|year))/i;
+const PRICE_INTENT_IN_QUERY = /\b(price|prices|pricing|cost|costs|costing|cheap|cheaper|cheapest|expensive|fee|fees|afford|affordable)\b|\bhow much\b/i;
+
+/** Weight for a facet match. Larger than a metadata match: a facet is a fact about the passage. */
+const FACET_WEIGHT = 1.5;
+
+function facetsOfPassage(text: string): Set<string> {
+  const facets = new Set<string>();
+  if (RECURRING_PRICE.test(text)) facets.add(FACET_PRICE);
+  return facets;
+}
+
+function facetsOfQuery(query: string): Set<string> {
+  const facets = new Set<string>();
+  if (PRICE_INTENT_IN_QUERY.test(query)) facets.add(FACET_PRICE);
+  return facets;
+}
+
+function clamp(value: number, low: number, high: number): number {
+  if (!Number.isFinite(value)) return low;
+  return Math.min(high, Math.max(low, Math.floor(value)));
+}
 
 /**
  * Weight for a query term matched only in a source's metadata rather than in
@@ -78,6 +152,8 @@ export interface RetrievalResult {
   /** Share of query terms covered by the selected passages. */
   coverage: number;
   quality: 'strong' | 'weak' | 'none';
+  /** Derived facets the question asked for, such as "holds a price". */
+  facets: string[];
   results: ScoredChunk[];
   /** How many passages existed to search, for the reuse/scale story. */
   consideredChunks: number;
@@ -92,11 +168,16 @@ interface IndexedChunk {
   length: number;
   /** Terms describing the source as a whole, scored as a separate weaker field. */
   contextTerms: Set<string>;
+  /** Facts derived from the passage that its words do not state, such as "holds a price". */
+  facets: Set<string>;
 }
 
 export class RetrievalIndex {
   private readonly documents: IndexedChunk[] = [];
-  private readonly documentFrequency = new Map<string, number>();
+  /** How many passages contain the term in their own text. Drives body scoring. */
+  private readonly bodyFrequency = new Map<string, number>();
+  /** How many passages contain the term in text or source metadata. Drives the context bonus. */
+  private readonly anyFrequency = new Map<string, number>();
   private readonly averageLength: number;
 
   /**
@@ -114,12 +195,20 @@ export class RetrievalIndex {
       for (const token of tokens) termFrequency.set(token, (termFrequency.get(token) ?? 0) + 1);
 
       const contextTerms = new Set(tokenize(contextBySourceId.get(chunk.sourceId) ?? ''));
-      // A term is "in" a document if either field holds it, so a metadata-only
-      // term still gets a meaningful inverse document frequency.
-      for (const term of new Set([...termFrequency.keys(), ...contextTerms])) {
-        this.documentFrequency.set(term, (this.documentFrequency.get(term) ?? 0) + 1);
+
+      // Two tables, because source metadata repeats across every passage of a
+      // source. Counting it in one table made any word that appeared in a
+      // source description look common and stripped its IDF for real body
+      // matches too: "customers" in a source topic line pushed the passage that
+      // actually says "5 million customers" down to ninth place.
+      for (const term of termFrequency.keys()) {
+        this.bodyFrequency.set(term, (this.bodyFrequency.get(term) ?? 0) + 1);
       }
-      this.documents.push({ chunk, termFrequency, length: tokens.length, contextTerms });
+      const facets = facetsOfPassage(chunk.text);
+      for (const term of new Set([...termFrequency.keys(), ...contextTerms, ...facets])) {
+        this.anyFrequency.set(term, (this.anyFrequency.get(term) ?? 0) + 1);
+      }
+      this.documents.push({ chunk, termFrequency, length: tokens.length, contextTerms, facets });
     }
     const total = this.documents.reduce((sum, document) => sum + document.length, 0);
     this.averageLength = this.documents.length > 0 ? total / this.documents.length : 0;
@@ -129,34 +218,53 @@ export class RetrievalIndex {
     return this.documents.length;
   }
 
+  /** Every term that appears in the text of some stored passage. */
+  vocabulary(): ReadonlySet<string> {
+    return new Set(this.bodyFrequency.keys());
+  }
+
+  private idf(documentFrequency: number): number {
+    return Math.log(1 + (this.documents.length - documentFrequency + 0.5) / (documentFrequency + 0.5));
+  }
+
   search(
     query: string,
     options: { topK?: number; maxPerSource?: number } = {},
   ): RetrievalResult {
-    const topK = options.topK ?? config.retrieval.topK;
-    const maxPerSource = options.maxPerSource ?? config.retrieval.maxPerSource;
-    const terms = [...new Set(tokenize(query))];
+    // Clamped rather than trusted: these reach the index from an HTTP body and
+    // a CLI flag. A top-k of 0 used to return nothing, which the answer path
+    // then reported as "the research contains nothing on this topic" — a false
+    // statement caused by an input value.
+    const topK = clamp(options.topK ?? config.retrieval.topK, 1, 50);
+    const maxPerSource = clamp(options.maxPerSource ?? config.retrieval.maxPerSource, 1, topK);
+    const terms = [...new Set(tokenize(expandRegionShorthand(query)))];
+    const wantedFacets = facetsOfQuery(query);
 
     const scored: ScoredChunk[] = [];
     for (const document of this.documents) {
       let score = 0;
       const matched: string[] = [];
+      for (const facet of wantedFacets) {
+        if (document.facets.has(facet)) score += FACET_WEIGHT * this.idf(this.anyFrequency.get(facet) ?? 0);
+      }
       for (const term of terms) {
         const frequency = document.termFrequency.get(term);
         const inContext = document.contextTerms.has(term);
         if (!frequency && !inContext) continue;
         matched.push(term);
 
-        const df = this.documentFrequency.get(term) ?? 0;
-        const idf = Math.log(1 + (this.documents.length - df + 0.5) / (df + 0.5));
         if (frequency) {
           const normalisation = 1 - B + (B * document.length) / (this.averageLength || 1);
-          score += idf * ((frequency * (K1 + 1)) / (frequency + K1 * normalisation));
+          score +=
+            this.idf(this.bodyFrequency.get(term) ?? 0) *
+            ((frequency * (K1 + 1)) / (frequency + K1 * normalisation));
         } else {
-          score += CONTEXT_WEIGHT * idf;
+          score += CONTEXT_WEIGHT * this.idf(this.anyFrequency.get(term) ?? 0);
         }
       }
-      if (score > 0) scored.push({ chunk: document.chunk, score, matchedTerms: matched });
+      // A facet alone is not evidence of relevance; a passage still has to
+      // match something the user actually typed.
+      if (matched.length > 0) scored.push({ chunk: document.chunk, score, matchedTerms: matched });
     }
 
     scored.sort((a, b) => b.score - a.score || a.chunk.id.localeCompare(b.chunk.id));
@@ -190,6 +298,7 @@ export class RetrievalIndex {
       terms,
       matchedTerms,
       coverage,
+      facets: [...wantedFacets],
       quality:
         selected.length === 0 ? 'none' : coverage >= config.retrieval.weakCoverage ? 'strong' : 'weak',
       results: selected,
@@ -220,7 +329,7 @@ function sourceContext(store: ResearchStore): Map<string, string> {
       .listSources()
       .map((source) => [
         source.id,
-        [source.title, source.label, source.region, source.currency, source.topic]
+        [source.title, source.label, source.region, regionWords(source.region), source.currency, source.topic]
           .filter(Boolean)
           .join(' '),
       ]),
