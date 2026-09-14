@@ -133,10 +133,10 @@ the behaviour under test is not.
 the same `ask` path as an ordinary question and writes JSON and Markdown to `eval/results/`. Each
 file states at the top whether its model outputs are real or mocked.
 
-- [`live-model-2026-09-14T08-27-35-147Z.md`](eval/results/live-model-2026-09-14T08-27-35-147Z.md) —
+- [`live-model-2026-09-14T08-34-56-831Z.md`](eval/results/live-model-2026-09-14T08-34-56-831Z.md) —
   **real model output.** `deepseek-flash`, temperature 0, run 2026-09-14; sources retrieved
   2026-09-14T08:23Z. 4/4 cases passed every check.
-- [`offline-mock-2026-09-14T08-25-33-882Z.md`](eval/results/offline-mock-2026-09-14T08-25-33-882Z.md)
+- [`offline-mock-2026-09-14T08-34-56-393Z.md`](eval/results/offline-mock-2026-09-14T08-34-56-393Z.md)
   — **mocked model output** over synthetic fixtures, plus a demonstration that a failed refresh
   leaves stored evidence and its retrieval time untouched.
 

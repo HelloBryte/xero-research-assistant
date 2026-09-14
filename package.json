@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "description": "Evidence-grounded question answering over publicly gathered Xero research.",
-  "engines": { "node": ">=20.6" },
+  "engines": {
+    "node": ">=20.6"
+  },
   "scripts": {
     "serve": "tsx src/server.ts",
     "cli": "tsx src/cli.ts",
@@ -18,13 +20,13 @@
   },
   "dependencies": {
     "cheerio": "^1.0.0",
-    "express": "^4.21.2"
+    "express": "^5.2.1"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0",
+    "@types/express": "^5.0.6",
     "@types/node": "^22.10.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vitest": "^4.1.11"
   }
 }
