@@ -347,11 +347,18 @@ export function parseModelJson(text: string): ModelPayload {
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
       throw new Error('expected a JSON object');
     }
-    return parsed as ModelPayload;
+    const payload = parsed as ModelPayload;
+    // Well-formed JSON with no answer text is still an invalid response. It used
+    // to be returned as a successful, empty answer, which is exactly the
+    // "invalid response presented as a result" the brief rules out.
+    if (typeof payload.answer !== 'string' || payload.answer.trim() === '') {
+      throw new Error('the reply has no "answer" text');
+    }
+    return payload;
   } catch (error) {
     throw new ModelFailure(
       'invalid_response',
-      `Model reply was not valid JSON (${(error as Error).message}). First 200 characters: ${truncate(trimmed, 200)}`,
+      `Model reply was not a usable answer (${(error as Error).message}). First 200 characters: ${truncate(trimmed, 200)}`,
     );
   }
 }

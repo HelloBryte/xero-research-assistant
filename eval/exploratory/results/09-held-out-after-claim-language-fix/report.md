@@ -1,0 +1,696 @@
+# Exploratory test run
+
+**Model outputs:** REAL — replies come from the configured model endpoint
+**Question bank:** `eval/exploratory/questions-held-out.json`
+**Model:** `deepseek-flash` via `https://api.deepseek.com`, temperature 0
+**Retrieval:** top 6, max 3 per source
+**Run started:** 2026-09-16T14:21:35.842Z
+**Research:** 58 passages from 5 sources
+
+- `wikipedia-xero` — https://en.wikipedia.org/wiki/Xero_(company) — retrieved 2026-09-14T08:30:21.589Z — 6 passages
+- `xero-about` — https://www.xero.com/au/about/ — retrieved 2026-09-14T08:34:17.583Z — 10 passages
+- `xero-accounting-software-au` — https://www.xero.com/au/accounting-software/ — retrieved 2026-09-14T08:30:19.118Z — 20 passages
+- `xero-pricing-au` — https://www.xero.com/au/pricing-plans/ — retrieved 2026-09-14T08:30:17.319Z — 9 passages
+- `xero-pricing-us` — https://www.xero.com/us/pricing-plans/ — retrieved 2026-09-14T08:30:18.157Z — 13 passages
+
+## Summary: 20/20 passed
+
+| Category | What it probes | Passed |
+| --- | --- | --- |
+| pricing | Plan and price questions in phrasings not used during development. | 5/5 |
+| product | Capability questions a small business owner would ask. | 4/4 |
+| company | Company facts, including ones whose answer is time-sensitive. | 3/3 |
+| out-of-scope | Reasonable questions the stored research simply does not cover. | 3/3 |
+| follow-up | Questions that only make sense after a previous one. The application keeps no conversation state, by design. | 2/2 |
+| noisy | Typos, shouting, mixed languages: how real people type. | 3/3 |
+
+19 of 20 cases reached the model (60053 tokens in total); the rest were resolved by application logic before any model call.
+
+## pricing
+
+_Plan and price questions in phrasings not used during development._
+
+### `ho-plans-lowercase` — PASS
+
+**Question typed:** "what plans does xero have"
+
+**What this probes:** No capitals, no punctuation. Should still list plan names and qualify them by region.
+
+**Status:** partial
+
+**Answer:**
+
+> The passages establish only that Xero offers several plans to suit different business sizes and needs, and point readers to the pricing page to compare plans and start a 30-day free trial (E4). A promotion stated for the AU region says that on purchasing any Xero plan, the first month is free (E3, E5), and for the US region the passages say that rich, visual analytics via Xero Analytics are available on every plan (E6). None of the supplied passages name or list Xero's individual plans.
+
+**Context stated:** E1–E5 come from Xero's AU pages, region AU, currency AUD, retrieved 2026-09-14T08:30:17.319Z (E1–E3) and 2026-09-14T08:30:19.118Z (E4–E5). E6 comes from Xero's US pricing page, region US, currency USD, retrieved 2026-09-14T08:30:18.157Z. Prices, plans and availability are region and time specific. No passage contained instruction-like content.
+
+**Reported as not established:** The names of Xero's individual plans / How many plans Xero offers / The prices of any plan (no figures are given in the passages) / Which features or inclusions belong to which specific plan / Any region-specific differences between plans
+
+**Retrieval:** terms [plan, xero] → 6 of 58 passages (strong, coverage 1); E1=xero-pricing-au#6, E2=xero-pricing-au#5, E3=xero-pricing-au#7, E4=xero-accounting-software-au#12, E5=xero-accounting-software-au#14, E6=xero-pricing-us#8
+
+| Verdict | Claim | Cites |
+| --- | --- | --- |
+| supported | Xero offers several plans to suit different business sizes and needs. | xero-accounting-software-au#12 |
+| supported | Xero's accounting software page directs readers to the Xero pricing page to compare plans and start a 30-day free trial. | xero-accounting-software-au#12 |
+| supported | Purchase any Xero plan, and Xero will give the first month free. | xero-pricing-au#7, xero-accounting-software-au#14 |
+| supported | Rich, visual analytics on every plan with Xero Analytics, so you always know where your business stands. | xero-pricing-us#8 |
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=partial, allowed=answered|partial
+- pass — citations: 4 citation(s)
+- pass — every claim verified against its citation: 4 supported, 0 weak, 0 unsupported, 0 uncited
+- model: 2221 tokens, 3643ms
+
+### `ho-ultimate-20` — PASS
+
+**Question typed:** "How much is the Ultimate plan if I have 20 employees?"
+
+**What this probes:** The stored pages price Ultimate 10 but not the 20-person tier. The answer must not extrapolate a price from Ultimate 10.
+
+**Status:** partial
+
+**Answer:**
+
+> The evidence shows pricing for an 'Ultimate 10' plan in Australia: $14.30 per month for the first 3 months, then $143 per month (E4), with the same plan also listed as $14.30 per month, then $143 per month (E2). That plan includes 'Payroll for 10 people' (E2, E4). The passages also state that if you select a plan which includes Payroll, Expenses or Projects, additional charges may apply if you go over the stated included number of users (Expenses and Projects) or people paid (Payroll) (E3), and that prices on the Australian pricing page are in AUD and include GST (E3). However, no passage gives a price for an Ultimate plan with 20 employees, and no passage sets out the charge per additional employee paid through payroll, so the total cost for 20 employees cannot be established from this evidence.
+
+**Context stated:** E2, E3 and E4 are from Xero's Australian pricing pages and are stated in AUD (E3 also says prices include GST); E4 and E2 list the Ultimate 10 plan and were retrieved 2026-09-14. E1 and E5 are from Xero's US pricing pages in USD (retrieved 2026-09-14); E1 notes that Xero subscription prices are increasing from October 1, 2026, and that prices are listed in USD and exclude applicable taxes. No passage contained instruction-like text.
+
+**Reported as not established:** The price of an Ultimate plan (or Ultimate 10 plan) for 20 employees. / The amount charged per additional employee/people paid under a payroll-inclusive plan, including beyond the 10 people included in Ultimate 10. / Whether any plan tier above Ultimate 10 exists, and whether such a tier would cover 20 employees. / Whether the per-additional-user rates mentioned on the Australian pricing page apply to payroll employees, and how they would apply at 20 employees.
+
+**Retrieval:** terms [ultimate, plan, 20, employee] → 6 of 58 passages (strong, coverage 1); E1=xero-pricing-us#3, E2=xero-accounting-software-au#18, E3=xero-pricing-au#3, E4=xero-pricing-au#1, E5=xero-pricing-us#1, E6=xero-pricing-au#2
+
+| Verdict | Claim | Cites |
+| --- | --- | --- |
+| supported | The Ultimate 10 plan is listed at $14.30 per month for the first 3 months, then $143 per month. | xero-pricing-au#1 |
+| supported | The Ultimate 10 plan is listed at $14.30 per month, then $143 per month. | xero-accounting-software-au#18 |
+| supported | The Ultimate 10 plan includes Payroll for 10 people. | xero-accounting-software-au#18, xero-pricing-au#1 |
+| supported | If you select a plan which includes Payroll, Expenses, or Projects, additional charges may apply if you go over the stated included number of users (Expenses and Projects) or people paid (Payroll). | xero-pricing-au#3 |
+| supported | Prices shown on the Australian pricing plans page are in AUD and include GST. | xero-pricing-au#3 |
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=partial, allowed=partial|insufficient|answered
+- pass — every claim verified against its citation: 5 supported, 0 weak, 0 unsupported, 0 uncited
+- model: 4410 tokens, 9166ms
+
+### `ho-per-user` — PASS
+
+**Question typed:** "xero grow plan is $78 - is that per user or per business?"
+
+**What this probes:** Tests whether per-user versus flat pricing is established by the evidence, without assuming.
+
+**Status:** partial
+
+**Answer:**
+
+> The passages do not say whether the Grow plan price is charged per user or per business. What they do establish is that Grow is listed at "$7.80 per month" then "$78 per month" (E1), with the accounting-software page describing the $7.80 as "for the first 3 months" before the "Then $78 per month" (E2). Prices are stated to be "in AUD and include GST" (E1). Grow is also listed as including "Payroll for 2 people" (E1, E2) and "Claim expenses and mileage for 1 user" (E1, E2), and E1 notes that additional charges may apply if the stated included number of users or people paid is exceeded (E1). Nothing in the supplied passages states whether the $78 monthly price itself is per business or per user, so that part of the question cannot be answered from this evidence.
+
+**Context stated:** All cited passages are from xero.com Australian pages (region AU, currency AUD), retrieved 2026-09-14T08:30:17.319Z and 2026-09-14T08:30:19.118Z; prices are stated in AUD and include GST (E1). Passage E1 also lists entries such as "$5 per additional user" and "$7 per additional user" in its plan-comparison section, but the passage does not make clear which plan or feature each of those attaches to, so no claim is made about them. No instruction-like content was found in the passages.
+
+**Reported as not established:** Whether the $78 per month Grow price is charged per user or per business. / Whether the $78 per month figure applies per user in any way, e.g. whether adding users changes the base subscription price.
+
+**Retrieval:** terms [xero, grow, plan, 78, per, user, business] → 6 of 58 passages (strong, coverage 1); E1=xero-pricing-au#3, E2=xero-accounting-software-au#16, E3=xero-accounting-software-au#18, E4=xero-pricing-au#5, E5=xero-pricing-au#2, E6=xero-accounting-software-au#13
+
+| Verdict | Claim | Cites |
+| --- | --- | --- |
+| supported | The Grow plan is listed at "$7.80 per month" then "$78 per month". | xero-pricing-au#3, xero-accounting-software-au#16 |
+| supported | On the accounting software page, the $7.80 per month figure is described as being "for the first 3 months", after which it is "Then $78 per month". | xero-accounting-software-au#16 |
+| supported | Prices are in AUD and include GST. | xero-pricing-au#3 |
+| supported | Grow includes "Payroll for 2 people". | xero-pricing-au#3, xero-accounting-software-au#16 |
+| supported | Grow includes "Claim expenses and mileage for 1 user". | xero-pricing-au#3, xero-accounting-software-au#16 |
+| supported | If a selected plan includes Payroll, Expenses, or Projects, additional charges may apply if the stated included number of users or people paid is exceeded. | xero-pricing-au#3 |
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=partial, allowed=answered|partial|insufficient
+- pass — every claim verified against its citation: 6 supported, 0 weak, 0 unsupported, 0 uncited
+- model: 3394 tokens, 7137ms
+
+### `ho-discount-end` — PASS
+
+**Question typed:** "When does the current discount end?"
+
+**What this probes:** The offers state end dates per region; the answer should give them with their region.
+
+**Status:** answered
+
+**Answer:**
+
+> The passages give two different discount end dates, one per region, so the answer depends on where the customer is. For Australia, the offer runs until 11:59pm AEST on 30 September 2026 using code DC9032619AU, and gives new customers 90% off for the first 3 months (E1). That Australian discount applies to base Ignite, Grow, Comprehensive, Ultimate or Ultra plan subscriptions (E1). For the United States, the offer is available until 30 September 2026 at 11:59pm UTC using code DC90626308US, and gives new customers 90% off for the first 6 months (E2). That US discount applies to base Early, Growing and Established plan subscriptions (E2). In both regions, Xero says it can change or cancel the offer at any time (E1, E2), and after the discounted period Xero's regular price applies and the subscription auto-renews monthly until cancelled (E1, E2).
+
+**Context stated:** The Australian passages are from https://www.xero.com/au/pricing-plans/ (region AU, currency AUD) and the US passages from https://www.xero.com/us/pricing-plans/ (region US, currency USD); both were retrieved on 2026-09-14T08:30:17.319Z / 2026-09-14T08:30:18.157Z respectively, and the offer terms are as stated on those pages at that retrieval date. The discount amounts shown (90% off) appear in the offers described in E1 and E2 together with their stated end dates and codes.
+
+**Reported as not established:** Which region's discount the question refers to, since the passages give separate Australian and US end dates and the user did not specify a region. / Whether there are any other Xero discounts or offers besides the Australian and US new-customer offers described in the passages. / The end date of any discount for regions other than Australia and the United States.
+
+**Retrieval:** terms [current, discount, end] → 4 of 58 passages (strong, coverage 0.667); E1=xero-pricing-au#4, E2=xero-pricing-us#4, E3=xero-pricing-au#8, E4=xero-pricing-us#12
+
+| Verdict | Claim | Cites |
+| --- | --- | --- |
+| supported | In Australia, the offer is available until 11:59pm AEST on 30 September 2026 using code DC9032619AU. | xero-pricing-au#4 |
+| supported | In Australia, new customers get 90% off for the first 3 months, then Xero's regular price will apply and auto-renew monthly until cancelled. | xero-pricing-au#4 |
+| supported | The Australian offer is only available to customers in Australia purchasing their first organisation on xero.com. | xero-pricing-au#4 |
+| supported | The Australian discount applies to base Ignite, Grow, Comprehensive, Ultimate or Ultra plan subscriptions. | xero-pricing-au#4 |
+| supported | In the United States, the offer is available until 30 September 2026 at 11:59pm UTC using code DC90626308US. | xero-pricing-us#4 |
+| supported | In the United States, new customers get 90% off for the first 6 months, then Xero's regular price will apply and auto-renew monthly until cancelled. | xero-pricing-us#4 |
+| supported | The US offer is only available to customers in the United States purchasing their first organization on xero.com. | xero-pricing-us#4 |
+| supported | The US discount applies to base Early, Growing, Established plan subscriptions. | xero-pricing-us#4 |
+| supported | In both the Australian and US offers, Xero can change or cancel the offer at any time. | xero-pricing-au#4, xero-pricing-us#4 |
+| supported | Xero subscriptions auto-renew monthly until they are cancelled. | xero-pricing-us#12 |
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=answered, allowed=answered|partial
+- pass — citations: 3 citation(s)
+- pass — every claim verified against its citation: 10 supported, 0 weak, 0 unsupported, 0 uncited
+- pass — mentions required context: found "30 September"
+- model: 3400 tokens, 6421ms
+
+### `ho-nz-price` — PASS
+
+**Question typed:** "How much does Xero cost in New Zealand?"
+
+**What this probes:** No New Zealand pricing page is stored. Presenting an AUD or USD price as the NZ price would be wrong.
+
+**Status:** insufficient
+
+**Answer:**
+
+> The supplied passages do not contain any Xero pricing for New Zealand. No passage states a New Zealand region price or a NZD figure. The only pricing passages supplied are for the United States (prices in USD) (E4, E5) and Australia (prices in AUD, including GST) (E6), and none of these can be used to state what Xero costs in New Zealand.
+
+**Context stated:** The question concerns New Zealand, but no New Zealand pricing page is among the evidence. The pricing passages retrieved on 2026-09-14 cover the US (E4, E5; prices listed in USD, excluding applicable taxes) and Australia (E6; prices in AUD and include GST). E1 states Xero Limited is headquartered in Wellington, New Zealand and was founded there (E2), but that is not pricing information. Note also that E5 states Xero subscription prices in the US are increasing from October 1, 2026. No passage contained anything resembling an embedded instruction; all content was treated as data.
+
+**Reported as not established:** The cost of any Xero plan in New Zealand, in NZD or any other currency. / Which Xero plans or plan names are offered in New Zealand. / Whether New Zealand pricing differs from the US pricing in USD (E4, E5) or the Australian pricing in AUD (E6). / Any New Zealand-specific taxes, GST treatment, promotional periods or billing terms.
+
+**Retrieval:** terms [xero, cost, new, zealand] → 6 of 58 passages (strong, coverage 1); E1=wikipedia-xero#0, E2=wikipedia-xero#1, E3=wikipedia-xero#2, E4=xero-pricing-us#1, E5=xero-pricing-us#3, E6=xero-pricing-au#3
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=insufficient, allowed=insufficient|partial
+- pass — every claim verified against its citation: 0 supported, 0 weak, 0 unsupported, 0 uncited
+- pass — states what it could not establish: 4 unknown(s)
+- model: 3479 tokens, 3908ms
+
+## product
+
+_Capability questions a small business owner would ask._
+
+### `ho-us-payroll` — PASS
+
+**Question typed:** "Does Xero do payroll in the US?"
+
+**What this probes:** The US page describes payroll powered by a partner; the answer should say so and cite the US page.
+
+**Status:** answered
+
+**Answer:**
+
+> Yes. According to the US pricing-plans page, Xero Payroll, powered by Gusto, is available in the United States: it lets you calculate and file payroll taxes, pay your team, and keep up with your compliance obligations without leaving Xero (E1, E2). That page is presented as the US pricing-plans page (region US, currency USD) as retrieved on 2026-09-14 (E1, E2). The passages also describe Xero Payroll for the Australian market, where it helps you pay employees, manage super, track leave and timesheets, and calculate pay runs (E6), but that description applies to the AU region.
+
+**Context stated:** E1 and E2 come from Xero's US pricing-plans page (region US, currency USD) as retrieved on 2026-09-14; the page does not quote a payroll price in the supplied sections. E6 is from Xero's Australian accounting-software page (region AU, currency AUD), retrieved 2026-09-14, so its payroll description applies to Australia. E3 and E4 are global Wikipedia content; E5 is US offer and payment-fee terms from the same US pricing page. No instruction-like content was found in the passages.
+
+**Reported as not established:** Whether the Gusto-powered Xero Payroll is available in every US state, and any state-level restrictions, are not established by the passages. / The price of Xero Payroll or which US subscription plans include it is not established by the passages.
+
+**Retrieval:** terms [xero, payroll, united, state, america] → 6 of 58 passages (strong, coverage 1); E1=xero-pricing-us#10, E2=xero-pricing-us#9, E3=wikipedia-xero#0, E4=wikipedia-xero#2, E5=xero-pricing-us#4, E6=xero-accounting-software-au#9
+
+| Verdict | Claim | Cites |
+| --- | --- | --- |
+| supported | Xero Payroll, powered by Gusto, lets users calculate and file payroll taxes, pay their team, and keep up with their compliance obligations without leaving Xero. | xero-pricing-us#10, xero-pricing-us#9 |
+| supported | Xero Payroll helps users pay employees, manage super, track leave and timesheets, and calculate pay runs. | xero-accounting-software-au#9 |
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=answered, allowed=answered|partial
+- pass — citations: 3 citation(s)
+- pass — every claim verified against its citation: 2 supported, 0 weak, 0 unsupported, 0 uncited
+- model: 3169 tokens, 5362ms
+
+### `ho-jax` — PASS
+
+**Question typed:** "What is JAX?"
+
+**What this probes:** A product name that only appears on Xero's own pages.
+
+**Status:** partial
+
+**Answer:**
+
+> The passages describe JAX only in terms of what it does, not what it is as a product. One passage states that "JAX automatically categorises and matches high-confidence bank transactions, giving you a reliable, up-to-date view of your finances" (E2). A second passage lists "JAX Chat" as one of the useful features to run a business in Xero's online accounting software (E1). Beyond these two references, the passages do not explain what JAX is, who provides it, or how the two mentions relate to each other.
+
+**Context stated:** All passages apply to the AU region and AUD currency and were retrieved on 2026-09-14. E1 and E2 come from the same Australian accounting software page; E2 sits in a "Grow" plan section listing $7.80 per month for the first 3 months, then $78 per month. The passages contained no instructions directed at the assistant.
+
+**Reported as not established:** What JAX is (for example, whether it is a product, assistant or add-on) or what the name stands for / What "JAX Chat" does or how it differs from JAX as described in the Grow plan / Whether JAX is a feature of a particular pricing plan or available across plans / Any pricing, region-specific availability or launch details for JAX
+
+**Retrieval:** terms [jax] → 3 of 58 passages (strong, coverage 1); E1=xero-accounting-software-au#19, E2=xero-accounting-software-au#16, E3=xero-pricing-au#1
+
+| Verdict | Claim | Cites |
+| --- | --- | --- |
+| supported | JAX automatically categorises and matches high-confidence bank transactions, giving you a reliable, up-to-date view of your finances. | xero-accounting-software-au#16 |
+| supported | Xero lists "JAX Chat" among the useful features to run your business. | xero-accounting-software-au#19 |
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=partial, allowed=answered|partial
+- pass — citations: 2 citation(s)
+- pass — every claim verified against its citation: 2 supported, 0 weak, 0 unsupported, 0 uncited
+- model: 2096 tokens, 3715ms
+
+### `ho-cancel` — PASS
+
+**Question typed:** "Can I cancel my subscription whenever I want?"
+
+**What this probes:** The offer terms describe monthly auto-renewal until cancelled; any cancellation policy beyond that is not established.
+
+**Status:** partial
+
+**Answer:**
+
+> The passages do not set out a cancellation policy, so they do not establish whether you can cancel whenever you want. What they do show is that subscriptions run on a monthly renewal cycle that continues until cancelled: the Australian pricing page states that "Xero subscriptions auto-renew monthly until they are cancelled" (E4), and the US pricing page says the same (E3, E6). The promotional terms on both pages describe new-customer discounts applying for an initial period, after which "Xero's regular price will apply and auto-renew monthly until cancelled as described in our Terms of Use" (E1, E2). The only plan-change term given is on the US page: if you later decide to change to a less expensive plan you can do so 1 month after upgrading (E3). No notice period, cancellation method, cancellation fee, or refund term is stated in any of the passages.
+
+**Context stated:** All passages were retrieved on 2026-09-14. E1 and E4 are from the Australian pricing page (region AU, currency AUD, prices include GST); E2, E3 and E6 are from the US pricing page (region US, currency USD, prices exclude applicable taxes). The renewal statements in E1 and E2 are tied to the promotional offers (available until 11:59pm AEST on 30 September 2026 using code DC9032619AU for Australia, and until 30 September 2026 at 11:59pm UTC using code DC90626308US for the United States). E6 also states that subscriptions auto-renew monthly until cancelled, but does not set out cancellation terms… [656 characters in total]
+
+**Reported as not established:** Whether a subscription can be cancelled at any time, at will. / Any notice period required to cancel. / The method or process for cancelling a subscription. / Whether any fee, penalty or minimum term applies to cancellation. / Whether any refund or pro-rata credit is given on cancellation.
+
+**Retrieval:** terms [cancel, subscription, whenever, want] → 6 of 58 passages (strong, coverage 0.5); E1=xero-pricing-au#4, E2=xero-pricing-us#4, E3=xero-pricing-us#3, E4=xero-pricing-au#3, E5=xero-pricing-au#8, E6=xero-pricing-us#12
+
+| Verdict | Claim | Cites |
+| --- | --- | --- |
+| supported | Xero subscriptions auto-renew monthly until they are cancelled. | xero-pricing-us#3, xero-pricing-au#3, xero-pricing-us#12 |
+| supported | New customers get 90% off for the first 3 months, then Xero's regular price will apply and auto-renew monthly until cancelled as described in Xero's Terms of Use. | xero-pricing-au#4 |
+| supported | New customers get 90% off for the first 6 months, then Xero's regular price will apply and auto-renew monthly until cancelled as described in Xero's Terms of Use. | xero-pricing-us#4 |
+| supported | If you later decide to change to a less expensive plan you can do so 1 month after upgrading. | xero-pricing-us#3 |
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=partial, allowed=answered|partial|insufficient
+- pass — every claim verified against its citation: 4 supported, 0 weak, 0 unsupported, 0 uncited
+- model: 4188 tokens, 6898ms
+
+### `ho-free-trial` — PASS
+
+**Question typed:** "is there a free trial"
+
+**What this probes:** Both a free trial and a free first month are mentioned on different pages.
+
+**Status:** answered
+
+**Answer:**
+
+> Yes. On Xero's Australian accounting-software page, Xero directs visitors to its pricing page to compare plans and start a 30-day free trial (E1). Separately, Xero states that if you purchase any Xero plan, it will give you the first month free (E2, E3), and its Australian pricing page advertises 90% off your plan for your first 3 months alongside "Get one month free" (E4). The US pricing pages describe a different kind of free offer: free, personalized onboarding from a product specialist for your first 90 days, including setting you up, helping connect your banks and getting your dashboard ready (E5, E6) — this is onboarding help rather than a free trial of the software.
+
+**Context stated:** E1–E4 are from Xero's Australian pages (region AU, currency AUD) retrieved 2026-09-14; E5–E6 are from Xero's US pages (region US, currency USD) retrieved 2026-09-14. No passage states the currency or price of any plan, and the trial wording in E1 does not specify a currency. Passages contain no instruction-like content.
+
+**Reported as not established:** Whether a free trial is offered in regions or currencies other than the Australian site covered by E1 / Whether the 30-day free trial and the "first month free" offer can be combined or are alternatives / Whether the "Get 90% off your plan for your first 3 months" offer applies to all plans or only to the self employed, small business and mid-sized business categories listed in E4 / The terms, eligibility conditions and length of the trial beyond the "30-day" wording in E1
+
+**Retrieval:** terms [free, trial] → 6 of 58 passages (strong, coverage 1); E1=xero-accounting-software-au#12, E2=xero-accounting-software-au#14, E3=xero-pricing-au#7, E4=xero-pricing-au#0, E5=xero-pricing-us#11, E6=xero-pricing-us#9
+
+| Verdict | Claim | Cites |
+| --- | --- | --- |
+| supported | Xero's Australian accounting-software page tells visitors to visit the Xero pricing page to compare plans and start a 30-day free trial. | xero-accounting-software-au#12 |
+| supported | Xero says that if you purchase any Xero plan, it will give you the first month free. | xero-accounting-software-au#14, xero-pricing-au#7 |
+| supported | Xero's Australian pricing page advertises "Get 90% off your plan for your first 3 months" and "Get one month free". | xero-pricing-au#0 |
+| supported | For the US, Xero offers free, personalized onboarding from a product specialist for your first 90 days. | xero-pricing-us#9 |
+| supported | In the US offer, a product specialist sets you up, helps connect your banks, and gets your dashboard ready, free for your first 90 days. | xero-pricing-us#11 |
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=answered, allowed=answered|partial
+- pass — citations: 6 citation(s)
+- pass — every claim verified against its citation: 5 supported, 0 weak, 0 unsupported, 0 uncited
+- model: 2692 tokens, 5492ms
+
+## company
+
+_Company facts, including ones whose answer is time-sensitive._
+
+### `ho-revenue` — PASS
+
+**Question typed:** "What was Xero's revenue last year?"
+
+**What this probes:** The encyclopaedia figure is labelled with a year, not 'last year'. The currency and the year label must be kept.
+
+**Status:** partial
+
+**Answer:**
+
+> The only revenue figure in the evidence is Xero Limited's revenue of NZ$2.753 billion for 2026 (E1). The passages do not include a revenue figure for 2025 or for any year before 2026, so a figure for "last year" — if that is taken to mean the year before the 2026 figure — cannot be established from the supplied passages.
+
+**Context stated:** E1 is a global Wikipedia article retrieved on 2026-09-14; the revenue figure is stated in NZ$ and is labelled only as "(2026)", with no indication of fiscal-year period. E1 lists other 2026 financial items (operating income NZ$316.1 million, net income NZ$167.4 million, total assets NZ$9.097 billion, total equity NZ$5.404 billion) that are not revenue. No passage contained any instruction-like content.
+
+**Reported as not established:** Xero's revenue for 2025 or for any year other than the 2026 figure shown. / Whether the "2026" revenue figure refers to a calendar year or a fiscal year, and its period end date. / Whether the 2026 figure is the most recent completed year relative to the retrieval date.
+
+**Retrieval:** terms [xero, revenue, last, year] → 6 of 58 passages (strong, coverage 0.75); E1=wikipedia-xero#0, E2=wikipedia-xero#5, E3=xero-accounting-software-au#0, E4=wikipedia-xero#1, E5=xero-accounting-software-au#13, E6=xero-pricing-us#10
+
+| Verdict | Claim | Cites |
+| --- | --- | --- |
+| supported | Xero Limited's revenue is NZ$2.753 billion (2026). | wikipedia-xero#0 |
+| supported | Xero Limited is a New Zealand technology company that provides cloud-based accounting software for small businesses. | wikipedia-xero#0 |
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=partial, allowed=answered|partial
+- pass — citations: 1 citation(s)
+- pass — every claim verified against its citation: 2 supported, 0 weak, 0 unsupported, 0 uncited
+- pass — mentions required context: found "NZ$"
+- model: 2861 tokens, 3859ms
+
+### `ho-ceo` — PASS
+
+**Question typed:** "Who runs Xero?"
+
+**What this probes:** The evidence names a CEO in a dated historical passage. It must not be presented as the current CEO without that date.
+
+**Status:** insufficient
+
+**Answer:**
+
+> The supplied passages do not establish who runs Xero. They describe features and offers — for example, that Xero's platform helps small businesses run their finances more easily, with plans for people who are self-employed and for larger businesses (E4), that Xero complies with Single Touch Payroll (STP) rules so reports can be sent directly to the ATO (E2), that Xero Payroll helps pay employees, manage super, track leave and timesheets, and calculate pay runs (E3), and that Xero Payroll in the US is powered by Gusto (E5) — but none of them identifies Xero's leadership, owners, parent company or anyone who "runs" the company. The evidence also does not define what "runs" would mean here, so no answer can be given.
+
+**Context stated:** Passages were retrieved on 2026-09-14. Region labels vary: E1 and E6 are labelled Global; E2, E3 and E4 are labelled AU with currency AUD; E5 is labelled US with currency USD. The passages contain no information about Xero's management or ownership; they also contain page elements such as 'Tick' (E4) and promotional text about Xero coaches free for the first 90 days (E5), which are not relevant to the question and were treated as page data, not instructions.
+
+**Reported as not established:** Who leads or manages Xero (executives, CEO, board, founders) / Who owns or controls Xero (owners, investors, parent company) / How Xero is structured or governed / What "runs Xero" is intended to mean in the question
+
+**Retrieval:** terms [run, xero] → 6 of 58 passages (strong, coverage 1); E1=xero-about#8, E2=xero-accounting-software-au#2, E3=xero-accounting-software-au#9, E4=xero-accounting-software-au#1, E5=xero-pricing-us#10, E6=xero-about#6
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=insufficient, allowed=answered|partial|insufficient
+- pass — every claim verified against its citation: 0 supported, 0 weak, 0 unsupported, 0 uncited
+- model: 1751 tokens, 2614ms
+
+### `ho-public` — PASS
+
+**Question typed:** "Is Xero a public company?"
+
+**What this probes:** A yes/no question answered by the infobox.
+
+**Status:** answered
+
+**Answer:**
+
+> Yes. The evidence lists Xero Limited's type as "Public" and shows it traded as ASX: XRO, as an S&P/ASX 200 component, with ISIN NZXROE0001S2 (E1). The same passage describes Xero Limited as a New Zealand technology company that provides cloud-based accounting software for small businesses (E1).
+
+**Context stated:** The cited passage (E1) is a Wikipedia article on Xero Limited labelled as Global region, retrieved 2026-09-14T08:30:21.589Z. No currency or price information is involved. Passages E2-E6 contain no statement about Xero's public/private status.
+
+**Reported as not established:** The passages do not state any listing date or the full list of exchanges on which Xero is listed beyond the ASX trading symbol given.
+
+**Retrieval:** terms [xero, public, company] → 6 of 58 passages (strong, coverage 1); E1=wikipedia-xero#0, E2=wikipedia-xero#2, E3=wikipedia-xero#4, E4=xero-about#6, E5=xero-about#8, E6=xero-about#9
+
+| Verdict | Claim | Cites |
+| --- | --- | --- |
+| supported | Xero Limited is a public company. | wikipedia-xero#0 |
+| supported | Xero Limited is traded as ASX: XRO and is an S&P/ASX 200 component. | wikipedia-xero#0 |
+| supported | Xero Limited has ISIN NZXROE0001S2. | wikipedia-xero#0 |
+| supported | Xero Limited is a New Zealand technology company that provides cloud-based accounting software for small businesses. | wikipedia-xero#0 |
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=answered, allowed=answered|partial
+- pass — citations: 1 citation(s)
+- pass — every claim verified against its citation: 4 supported, 0 weak, 0 unsupported, 0 uncited
+- model: 2607 tokens, 3050ms
+
+## out-of-scope
+
+_Reasonable questions the stored research simply does not cover._
+
+### `ho-password` — PASS
+
+**Question typed:** "How do I reset my Xero password?"
+
+**What this probes:** A support question the research does not cover. Must not produce general how-to steps from model knowledge.
+
+**Status:** insufficient
+
+**Answer:**
+
+> The supplied passages do not explain how to reset a Xero password. They cover topics such as Xero's business plans and usability (E1), Xero Payroll powered by Gusto and Xero Coach onboarding (E2), Xero's small business platform generally (E3), billing, auto-renewal and data security on the US pricing page (E4), a first-month-free offer on the AU pricing page (E5), and general accounting features such as bank feeds, GST and STP (E6). None of them describes a password reset process, so this cannot be established from the evidence provided.
+
+**Context stated:** The passages are region- and time-specific: E1, E5 and E6 are AU pages in AUD (E1 and E6 retrieved 2026-09-14T08:30:19.118Z, E5 retrieved 2026-09-14T08:30:17.319Z); E2 and E4 are US pages in USD (retrieved 2026-09-14T08:30:18.157Z); E3 is labelled Global (retrieved 2026-09-14T08:34:17.583Z). No passage contains anything resembling an injected instruction.
+
+**Reported as not established:** How to reset a Xero password / Where the password reset option is located in Xero or on the Xero website / Any steps, links or support contacts for recovering a Xero account or password
+
+**Retrieval:** terms [reset, xero, password] → 6 of 58 passages (weak, coverage 0.333); E1=xero-accounting-software-au#13, E2=xero-pricing-us#10, E3=xero-about#6, E4=xero-pricing-us#12, E5=xero-pricing-au#7, E6=xero-accounting-software-au#12
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=insufficient, allowed=insufficient|partial
+- pass — every claim verified against its citation: 0 supported, 0 weak, 0 unsupported, 0 uncited
+- pass — states what it could not establish: 3 unknown(s)
+- model: 2196 tokens, 2428ms
+
+### `ho-myob` — PASS
+
+**Question typed:** "Is Xero better than MYOB?"
+
+**What this probes:** A subjective comparison with no MYOB evidence stored.
+
+**Status:** insufficient
+
+**Answer:**
+
+> The evidence does not establish whether Xero is better than MYOB. None of the passages compares the two companies, their products, their prices or their customers; there is no comparative claim to report. The passages describe Xero's history and corporate milestones (E3), its stated purpose of helping small businesses, accountants and bookkeepers (E1, E2, E6), and some product and pricing descriptions for specific regions (E4, E5), but nothing about MYOB as a product or a competitor. The question therefore cannot be answered from the supplied passages.
+
+**Context stated:** All passages are untrusted page extracts. Retrieval context: E1, E2 and E6 are from the Xero 'About' page, region 'Global', retrieved 2026-09-14T08:34:17.583Z; E3 is from Wikipedia, region 'Global', retrieved 2026-09-14T08:30:21.589Z; E4 is the Australian accounting software page, region AU, currency AUD, retrieved 2026-09-14T08:30:19.118Z; E5 is the US pricing plans page, region US, currency USD, retrieved 2026-09-14T08:30:18.157Z. The word 'MYOB' appears only once in the evidence, in E3, and only as part of the description of an investor ('MYOB co-founder Craig Winkler'); that mention is not… [752 characters in total]
+
+**Reported as not established:** Whether Xero is better than MYOB, or how the two compare on features, usability, accuracy, support, price or customer satisfaction / Any information about MYOB's products, pricing or performance / Any statement by Xero or a third party directly comparing Xero with MYOB
+
+**Retrieval:** terms [xero, better, myob] → 6 of 58 passages (strong, coverage 1); E1=xero-about#4, E2=xero-about#3, E3=wikipedia-xero#1, E4=xero-accounting-software-au#13, E5=xero-pricing-us#10, E6=xero-about#6
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=insufficient, allowed=insufficient|partial
+- pass — every claim verified against its citation: 0 supported, 0 weak, 0 unsupported, 0 uncited
+- pass — states what it could not establish: 3 unknown(s)
+- model: 3207 tokens, 8424ms
+
+### `ho-phone` — PASS
+
+**Question typed:** "What's the phone number for Xero customer support?"
+
+**What this probes:** Contact details are not in the evidence. A plausible-looking number would be a fabrication.
+
+**Status:** insufficient
+
+**Answer:**
+
+> The supplied passages do not give a phone number for Xero customer support. E1 states only that customers can "Get round the clock peace of mind with support from Xero experts", and E4 includes a customer comment describing Xero's support staff as quick to respond and helpful, but no telephone number, contact channel or support hours are provided in any passage.
+
+**Context stated:** E1, E2 and E4 come from https://www.xero.com/au/accounting-software/, region AU, currency AUD, retrieved 2026-09-14T08:30:19.118Z. E3 and E5 come from https://www.xero.com/au/about/, region Global, retrieved 2026-09-14T08:34:17.583Z. E6 is a Wikipedia page retrieved 2026-09-14T08:30:21.589Z, region Global. Support availability may be region and time specific, but the passages do not state this.
+
+**Reported as not established:** The phone number for Xero customer support / Whether Xero customer support is reachable by phone at all, and via which channels / Support hours or days of availability
+
+**Retrieval:** terms [phone, number, xero, customer, support] → 6 of 58 passages (strong, coverage 1); E1=xero-accounting-software-au#4, E2=xero-accounting-software-au#6, E3=xero-about#7, E4=xero-accounting-software-au#0, E5=xero-about#1, E6=wikipedia-xero#0
+
+| Verdict | Claim | Cites |
+| --- | --- | --- |
+| supported | Xero offers round the clock support from Xero experts. | xero-accounting-software-au#4 |
+| supported | A customer review describes Xero's support staff as always happy to help, quick to respond and helpful. | xero-accounting-software-au#0 |
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=insufficient, allowed=insufficient|partial
+- pass — every claim verified against its citation: 2 supported, 0 weak, 0 unsupported, 0 uncited
+- model: 2134 tokens, 2623ms
+
+## follow-up
+
+_Questions that only make sense after a previous one. The application keeps no conversation state, by design._
+
+### `ho-followup-us` — PASS
+
+**Question typed:** "What about in the US?"
+
+**What this probes:** Only meaningful after an earlier question. With no conversation state, the answer should either cover US evidence generally or say what is ambiguous, without inventing the missing context.
+
+**Status:** partial
+
+**Answer:**
+
+> For the United States, the Xero pricing page currently leads with "Get 90% off your plan for your first 6 months when you buy by 30 September 2026" (E4). The offer terms explain that new customers get 90% off for the first 6 months, after which Xero's regular price applies and the subscription auto-renews monthly until cancelled; it is only available to customers in the United States purchasing their first organization on xero.com using code DC90626308US, and the offer is available until 30 September 2026 at 11:59pm UTC (E2). The discount applies to base Early, Growing and Established plan subscriptions and does not apply to any additional charges for add-ons, usage and payment fees unless otherwise specified (E2). On price, the page shows the Established plan at $9 per month for the first 6 months, then $90 per month (E5). The Established plan is listed as including sending invoices and quotes, accepting online invoice payments, automating bill entry and tracking bills, auto-reconciling bank transactions, Smart Document Capture, real-time reports, W-9 + 1099 management, sales tax, a 180 day cash flow forecast, multiple currencies, and optional add-ons such as Inventory Plus and Xe… [2163 characters in total]
+
+**Context stated:** Passages E2, E4, E5 and E6 are from xero.com/us/pricing-plans, region US, currency USD, as retrieved on 2026-09-14; the offer they describe ends 30 September 2026 at 11:59pm UTC. E1 and E3 are from Wikipedia (Global) retrieved on the same date; no prices or region-specific offers can be drawn from them. E3 was supplied but contained no US pricing information.
+
+**Reported as not established:** The monthly price of the Early plan in the US. / The monthly price of the Growing plan in the US. / The regular (undiscounted) price of the Early and Growing plans after the first 6 months. / Whether the US offer or pricing described applies to other regions or currencies. / Whether the offer requires annual or monthly billing beyond the auto-renewal monthly term described.
+
+**Retrieval:** terms [united, state, america] → 6 of 58 passages (strong, coverage 1); E1=wikipedia-xero#0, E2=xero-pricing-us#4, E3=wikipedia-xero#2, E4=xero-pricing-us#0, E5=xero-pricing-us#1, E6=xero-pricing-us#10
+
+| Verdict | Claim | Cites |
+| --- | --- | --- |
+| supported | The US pricing page states: "Get 90% off your plan for your first 6 months when you buy by 30 September 2026". | xero-pricing-us#0 |
+| supported | New customers get 90% off for the first 6 months, then Xero's regular price applies and auto-renews monthly until cancelled. | xero-pricing-us#4 |
+| supported | The offer is only available to customers in the United States purchasing their first organization on xero.com using code DC90626308US. | xero-pricing-us#4 |
+| supported | The offer is available until 30 September 2026 at 11:59pm UTC. | xero-pricing-us#4 |
+| supported | The discount applies to base Early, Growing, Established plan subscriptions and does not apply to any additional charges for add-ons, usage and payment fees, unless otherwise specified. | xero-pricing-us#4 |
+| supported | The Established plan is $9 per month for the first 6 months, then $90 per month. | xero-pricing-us#1 |
+| supported | The Established plan includes sending invoices and quotes, accepting online invoice payments, automating bill entry and tracking bills, auto-reconciling bank transactions, Smart Document Capture, view… [317 characters in total] | xero-pricing-us#1 |
+| supported | Optional add-ons for the Established plan include Inventory Plus (optional) and Xero Payroll, powered by Gusto. | xero-pricing-us#1 |
+| supported | Standard ACH payments are included in Xero Early, Growing and Established plans, with fees applying for other payment methods. | xero-pricing-us#4 |
+| supported | Included payments apply to standard ACH payments in USD and exclude same day ACH, international or cross border payments. | xero-pricing-us#4 |
+| supported | Any payment fees are in addition to the Xero monthly subscription amount and are not eligible for subscription discounts and offers. | xero-pricing-us#4 |
+| supported | Xero Payroll, powered by Gusto, is offered for calculating and filing payroll taxes, paying your team, and keeping up with compliance obligations without leaving Xero. | xero-pricing-us#10 |
+| supported | A Xero Coach, a product specialist who sets up a product, helps connect banks and gets the dashboard ready, is free for the first 90 days. | xero-pricing-us#10 |
+| supported | Xero Limited is a New Zealand technology company that provides cloud-based accounting software for small businesses, with offices in New Zealand, Australia, the United Kingdom, the United States, Cana… [231 characters in total] | wikipedia-xero#0 |
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=partial, allowed=answered|partial|insufficient
+- pass — every claim verified against its citation: 14 supported, 0 weak, 0 unsupported, 0 uncited
+- model: 4633 tokens, 9688ms
+
+### `ho-followup-pronoun` — PASS
+
+**Question typed:** "And how much is it there?"
+
+**What this probes:** Every word is a stopword, so nothing is searchable. Should be refused before any model call, with the could-not-search reason.
+
+**Status:** insufficient
+
+**Answer:**
+
+> The question could not be searched: after removing punctuation and common words it left no searchable term. Retrieval is word-based and indexes English page text, so a question written in another script, or made only of emoji or common words, cannot be matched against the stored research. This says nothing about what the research contains. Please rephrase in English using specific words such as a plan name, a feature or a figure.
+
+**Reported as not established:** And how much is it there?
+
+**Retrieval:** terms [] → 0 of 58 passages (none, coverage 0); none
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=insufficient, allowed=insufficient
+- pass — no model call was spent: model called = false
+- model: not called
+
+## noisy
+
+_Typos, shouting, mixed languages: how real people type._
+
+### `ho-shouting` — PASS
+
+**Question typed:** "XERO PRICING!!!!"
+
+**What this probes:** Capitals and punctuation must not affect retrieval.
+
+**Status:** partial
+
+**Answer:**
+
+> The passages cover pricing for two regions only, as retrieved on 2026-09-14. On the US pricing page (USD), the Early plan is listed at $2.50 per month, then $25 per month (E1), and the Established plan at $9 per month for the first 6 months, then $90 per month (E4). An optional item on that page is priced at $36 a month + $6 per employee/contractor (E1), and the page notes that Xero subscription prices are increasing from October 1, 2026 (E1). US prices are listed in USD and do not include applicable taxes (E1). On the Australian pricing page (AUD), the Grow plan is listed at $7.80 per month, then $78 per month (E2), Comprehensive at $10.70 per month, then $107 per month (E6), and Ultimate 10 at $14.30 per month for the first 3 months, then $143 per month (E5). Australian prices are in AUD and include GST (E2). Across both pages, Xero reserves the right to change pricing at any time and subscriptions auto-renew monthly until cancelled (E1, E2), and if you later decide to change to a less expensive plan you can do so 1 month after upgrading (E1, E2). The Australian page adds that if you select a plan which includes Payroll, Expenses, or Projects, additional charges may apply if you … [1425 characters in total]
+
+**Context stated:** All figures are region- and date-specific, as retrieved on 2026-09-14. Passage E1/E4 are from the Xero US pricing page (region US, currency USD; prices exclude applicable taxes) and E2/E5/E6 from the Xero Australian pricing page (region AU, currency AUD; prices include GST). Passage E3 is an Australian accounting-software page (region AU, currency AUD). Introductory rates shown (for example the first 6 months or first 3 months) are quoted exactly as the passages state them and are not converted or averaged. No instruction-like content was found in the passages.
+
+**Reported as not established:** Pricing for any region other than the US and Australia, and for any currency other than USD and AUD. / The complete set of Xero plan names and their prices in either region; the passages show only selected plan sections. / Whether the US Early plan's $2.50 per month applies for a limited introductory period, since no period is stated for that figure. / What the prices will be after the stated increase from October 1, 2026. / The full feature list and any add-on pricing for every plan shown. / Whether the 30-day free trial, the introductory rates, or the price increase apply in both regions.
+
+**Retrieval:** terms [xero, pricing] → 6 of 58 passages (strong, coverage 1); E1=xero-pricing-us#3, E2=xero-pricing-au#3, E3=xero-accounting-software-au#12, E4=xero-pricing-us#1, E5=xero-pricing-au#1, E6=xero-pricing-au#2
+
+| Verdict | Claim | Cites |
+| --- | --- | --- |
+| supported | The US Early plan is listed at $2.50 per month, then $25 per month. | xero-pricing-us#3 |
+| supported | The US Established plan is listed at $9 per month for the first 6 months, then $90 per month. | xero-pricing-us#1 |
+| supported | An optional item on the US pricing page is priced at $36 a month + $6 per employee/contractor. | xero-pricing-us#3 |
+| supported | Xero subscription prices are increasing from October 1, 2026. | xero-pricing-us#3 |
+| supported | US prices are listed in USD and do not include applicable taxes. | xero-pricing-us#3 |
+| supported | The AU Grow plan is listed at $7.80 per month, then $78 per month. | xero-pricing-au#3 |
+| supported | The AU Comprehensive plan is listed at $10.70 per month, then $107 per month. | xero-pricing-au#2 |
+| supported | The AU Ultimate 10 plan is listed at $14.30 per month for the first 3 months, then $143 per month. | xero-pricing-au#1 |
+| supported | Prices on the Australian pricing page are in AUD and include GST. | xero-pricing-au#3 |
+| supported | Xero reserves the right to change pricing at any time. | xero-pricing-us#3, xero-pricing-au#3 |
+| supported | Xero subscriptions auto-renew monthly until they are cancelled. | xero-pricing-us#3, xero-pricing-au#3 |
+| supported | If you later decide to change to a less expensive plan you can do so 1 month after upgrading. | xero-pricing-us#3, xero-pricing-au#3 |
+| supported | If you select a plan which includes Payroll, Expenses, or Projects, additional charges may apply if you go over the stated included number of users or people paid. | xero-pricing-au#3 |
+| supported | The Grow plan includes Payroll for 2 people, a 60 day cashflow forecast, smart document capture basic extraction, and claiming expenses and mileage for 1 user. | xero-pricing-au#3 |
+| supported | Xero offers several plans to suit different business sizes and needs, and mentions starting a 30-day free trial. | xero-accounting-software-au#12 |
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=partial, allowed=answered|partial
+- pass — citations: 6 citation(s)
+- pass — every claim verified against its citation: 15 supported, 0 weak, 0 unsupported, 0 uncited
+- model: 4808 tokens, 9558ms
+
+### `ho-typos` — PASS
+
+**Question typed:** "how much is the grwo plan pirce"
+
+**What this probes:** Misspelt key words. A lexical index cannot match 'grwo'. The expected outcome is an honest partial or insufficient answer, not a guess.
+
+**Status:** answered
+
+**Answer:**
+
+> The passages give two different plans with similar names, in two different regions. On the AU pricing page, the Grow plan is listed at "$7.80 per month" and "Then $78 per month" (E1). On the US pricing page, the Growing plan is listed at "$5.50 per month" and "Then $55 per month" (E6). The AU passage states that prices are in AUD and include GST (E1); the US passage states that all prices are listed in USD and do not include applicable taxes (E2). The US passage also notes that Xero subscription prices are increasing from October 1, 2026 (E2).
+
+**Context stated:** The question does not specify a region, and the evidence covers two: the AU pricing page (region AU, currency AUD, retrieved 2026-09-14) and the US pricing page (region US, currency USD, retrieved 2026-09-14). AU figures include GST (E1); US figures exclude applicable taxes (E2). The US page also carries a notice that subscription prices are increasing from October 1, 2026 (E2).
+
+**Reported as not established:** Which plan the question refers to: the AU 'Grow' plan (E1) or the US 'Growing' plan (E6). / How long the introductory $7.80 per month Grow price applies (E1 gives no duration, unlike other plans shown with 'for the first 3 months' or 'for the first 6 months'). / Whether these are current prices at any date other than the retrieval date, beyond the note that US subscription prices increase from October 1, 2026 (E2).
+
+**Retrieval:** terms [grwo, plan, pirce] → 6 of 58 passages (weak, coverage 0.333); E1=xero-pricing-au#3, E2=xero-pricing-us#3, E3=xero-pricing-au#1, E4=xero-pricing-au#2, E5=xero-pricing-us#1, E6=xero-pricing-us#2
+
+| Verdict | Claim | Cites |
+| --- | --- | --- |
+| supported | The Grow plan is listed at $7.80 per month, then $78 per month. | xero-pricing-au#3 |
+| supported | Grow is described as going beyond the basics - automate tasks and access performance dashboards. | xero-pricing-au#3 |
+| supported | On the AU pricing page, prices are in AUD and include GST. | xero-pricing-au#3 |
+| supported | The Growing plan is listed at $5.50 per month, then $55 per month. | xero-pricing-us#2 |
+| supported | On the US pricing page, all prices are listed in USD and do not include applicable taxes. | xero-pricing-us#3 |
+| supported | Xero subscription prices are increasing from October 1, 2026. | xero-pricing-us#3 |
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=answered, allowed=answered|partial|insufficient
+- pass — every claim verified against its citation: 6 supported, 0 weak, 0 unsupported, 0 uncited
+- model: 3706 tokens, 6315ms
+
+### `ho-mixed-language` — PASS
+
+**Question typed:** "Xero 的 Grow 套餐多少钱"
+
+**What this probes:** The English words survive tokenisation, so this should still retrieve the Grow plan and answer.
+
+**Status:** answered
+
+**Answer:**
+
+> 根据检索到的定价页面证据，Grow 套餐的价格显示为每月 $7.80，之后每月 $78（E6）。该页面同时说明价格以 AUD 计价并包含 GST（E6）。此外，针对澳大利亚新客户有一项优惠：前 3 个月享受 90% 折扣，之后按 Xero 常规价格执行并按月自动续订直到取消；该折扣适用于基础 Ignite、Grow、Comprehensive、Ultimate 或 Ultra 套餐订阅（E5）。
+
+**Context stated:** 价格信息来自 Xero 澳大利亚定价页面（region=AU，currency=AUD），检索时间为 2026-09-14；E6 所在段落标签为“Grow”。E5 中的优惠为：新客户前 3 个月 90% 折扣，优惠截至 2026 年 9 月 30 日 AEST 晚 11:59，使用代码 DC9032619AU，折扣不适用于附加项、用量和支付费用，且不可与其他优惠同时使用。所引段落中未发现任何类似指令的内容。
+
+**Reported as not established:** 检索到的证据只覆盖澳大利亚（AUD）页面，因此其他地区或货币下 Grow 套餐的价格无法确定。 / 证据未明确说明 $7.80 与 $78 分别是折扣价与常规价之间的对应关系，仅给出了两个金额以及优惠条款。
+
+**Retrieval:** terms [xero, grow] → 6 of 58 passages (strong, coverage 1); E1=xero-accounting-software-au#10, E2=xero-about#3, E3=xero-pricing-au#5, E4=xero-about#2, E5=xero-pricing-au#4, E6=xero-pricing-au#3
+
+| Verdict | Claim | Cites |
+| --- | --- | --- |
+| supported | The Grow plan is shown at $7.80 per month, then $78 per month. | xero-pricing-au#3 |
+| supported | Prices are in AUD and include GST. | xero-pricing-au#3 |
+| supported | Xero subscriptions auto-renew monthly until they are cancelled. | xero-pricing-au#3 |
+| supported | Xero reserves the right to change pricing at any time. | xero-pricing-au#3 |
+| supported | New customers get 90% off for the first 3 months, then Xero's regular price will apply and auto-renew monthly until cancelled. | xero-pricing-au#4 |
+| supported | The offer is only available to customers in Australia purchasing their first organisation on xero.com, and the discount applies to base Ignite, Grow, Comprehensive, Ultimate or Ultra plan subscription… [202 characters in total] | xero-pricing-au#4 |
+
+**Checks:**
+
+- pass — no source fetched while answering: 0 fetch(es)
+- pass — status: status=answered, allowed=answered|partial
+- pass — citations: 2 citation(s)
+- pass — every claim verified against its citation: 6 supported, 0 weak, 0 unsupported, 0 uncited
+- model: 3101 tokens, 5974ms
+

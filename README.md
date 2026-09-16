@@ -62,92 +62,72 @@ config/sources.json ─► research.ts ─► http.ts (robots, rate limit, timeo
 question ─► retrieve.ts (BM25 over stored passages) ─► prompt.ts ─► llm.ts ─► model
                                                                                   │
                       verify.ts (claim ↔ cited passage) ◄── answer.ts ◄───────────┘
-                                  └► answer + citations + verdicts ─► server.ts / cli.ts
+                                  └► answer + citations + verdicts ─► app.ts (HTTP) / cli.ts
 ```
 
-`ResearchService` (`src/service.ts`) is the single entry point behind both the web app and the CLI.
+`ResearchService` (`src/service.ts`) sits behind both the web app and the CLI.
 
-**Persisted** in `data/store.json`: per source, the title, configured and final URL, region/currency
-labels, retrieval time, content hash, processing time and last error, plus every extracted passage
-with its heading. `data/activity.jsonl` appends fetches, reuse, reprocessing, failures and model
-calls. Store writes go to a temp file and are renamed, so an interrupted write cannot corrupt it.
+**Persisted.** `data/store.json` holds each source's title, URL, region, retrieval time, content hash
+and last error, plus its extracted passages; writes go to a temp file and are renamed, so a crash
+cannot corrupt it. `data/activity.jsonl` records every fetch, reuse, reprocess, failure and model call.
 
-**Evidence reaching the model:** `retrieve.ts` scores stored passages against the question and
-returns the top six, capped at three per source. `prompt.ts` renders only those, inside `<passage>`
-elements carrying source title, URL, retrieval time, region and currency, with `<`, `>` and `"`
-stripped from the content so retrieved text cannot forge a delimiter.
+**Evidence to the model.** `retrieve.ts` selects the top six passages, at most three per source.
+`prompt.ts` sends only those, each inside a `<passage>` element carrying title, URL, retrieval time,
+region and currency, with characters that could forge the delimiter stripped.
 
-**Decided by application code, not the model:** which sources exist; when to fetch, reuse or
-reprocess (`research.ts`); which passages are retrieved (`retrieve.ts`); whether a cited passage
-supports its claim (`verify.ts`); and the final status, which verification can lower but never raise
-(`resolveStatus` in `src/answer.ts`). The model only drafts prose, splits it into claims, and
-attaches labels.
+**Application code, not the model, decides** which sources exist, when to fetch, reuse or reprocess
+(`research.ts`), which passages are retrieved (`retrieve.ts`), whether a cited passage supports its
+claim (`verify.ts`), and the final status, which verification can lower but never raise
+(`resolveStatus` in `answer.ts`). The model drafts prose, splits it into claims and attaches labels.
 
-### Decision 1 — BM25 over stored passages, not embeddings
+### Decision 1 — BM25, not embeddings
 
-**Chose** in-process lexical BM25 (`src/retrieve.ts`); the alternative was embeddings in a vector
-store. These questions turn on rare tokens — plan names, `$78`, `GST`, `AUD` — which IDF weights
-heavily for free, and BM25 adds no second service to keep in sync, no per-refresh embedding cost and
-no credentials for the offline path. Measured: 58 passages, search well under a millisecond, and the
-right passage ranked first in all four evaluation cases.
+**Chose** in-process BM25; **alternative:** embeddings in a vector store. These questions turn on
+rare tokens — plan names, `$78`, `GST` — which IDF weights heavily, and BM25 adds no service to keep
+in sync, no per-refresh embedding cost and no credentials for the offline tests. Source title and
+region are scored as a separate, weaker field: a plan card reads "$7.80 per month" and never names
+Australia, so without it Australian prices were unreachable (F-01). **Measured:** 58 passages,
+sub-millisecond search, the right passage first in all four evaluation cases. Also measured, as a
+limitation: "Who runs Xero?" misses the passages naming the CEO, because `runs` matches "pay runs"
+(K-01). **Would reconsider** once paraphrased questions matter more than exact ones, or past ~10⁴
+passages; retrieval sits behind one `search` call.
 
-Scoring is fielded. The passage text and heading are scored with BM25; the source's title, label,
-region, currency and topic are scored as a second, weaker field at a flat `CONTEXT_WEIGHT × idf`.
-That field is not decoration — a priced plan card reads "$7.80 per month" and never names Xero,
-pricing or Australia, so without it a question asking for Australian pricing could not retrieve the
-Australian price at all. Folding the metadata into the passage's own term counts was tried first and
-was worse: a dozen metadata tokens dominate an eight-token passage and pushed short, low-value
-passages to the top.
+### Decision 2 — verify citations in application code
 
-**Assumption, not measurement:** that recall holds for questions beyond those tested. **Would
-reconsider** if questions paraphrase rather than quote ("what does it cost for a sole trader?"
-matches nothing lexically), or past ~10⁴ passages. Retrieval sits behind one `search` call, so
-swapping it does not touch the answer path.
-
-### Decision 2 — verify the model's citations in application code
-
-**Chose** a deterministic check (`src/verify.ts`): every figure in a claim must appear in the cited
-passage or its metadata, and the claim's content words must overlap it. Verdicts (`supported`,
-`weak`, `unsupported`, `uncited`) are shown, and an unclean result downgrades the answer to
-`partial`. The alternatives were trusting the citation or using a model as judge. Plausible-but-wrong
-citations are the failure mode that matters here, fabricated figures are what a fluent model
-produces, and a numeric check costs nothing and cannot itself hallucinate. **Measured:** it caught
-two real defects during development — a claim restating a retrieval date absent from the passage
-text, and inline `(E1)` markers being read as figures; both are fixed and covered by tests.
-**Would reconsider** for answers that legitimately paraphrase or aggregate, where word overlap is the
-wrong signal; entailment checking is the next step. The check is shallow by design: it cannot detect
-a claim that reverses the meaning of the evidence it cites, and it necessarily misreads a claim
-*about* the evidence ("that passage does not specify the introductory period"), which has low
-overlap by construction. Rather than loosen the check, the prompt now requires claims to be
-statements about Xero and sends anything the evidence does not establish to `unknowns`; a
-meta-statement that slips through is flagged rather than silently accepted.
+**Chose** a deterministic check: every figure in a claim must appear in its cited passages, and its
+wording must overlap them; a failing claim is shown as such and downgrades the answer. **Alternative:**
+trust citations, or use a model as judge. Fabricated figures are what a fluent model produces, and a
+numeric check costs nothing and cannot hallucinate. **Measured:** it caught a live claim quoting
+`$2.50` while citing only a passage that does not contain it (F-11). Also measured: it is lexical, not
+entailment — a claim that prices *exclude* GST, cited to a passage saying they *include* it, is only
+marked `weak`, which does not fail the answer.
+**Would reconsider** if answers must aggregate or paraphrase heavily; entailment checking is next.
 
 ## Tests and evaluation
 
-`npm test` — 59 vitest tests, no credentials or network. Reuse (a second gather makes zero fetches;
-asking never fetches), refresh semantics (unchanged / reprocessed / forced rebuild), failure safety
-(a failed refresh keeps earlier evidence, keeps its retrieval time, and marks it), model failures
-(timeout and unparseable reply produce no answer), citation validation, claim verification, API-key
-redaction, and that retrieved content cannot forge a prompt delimiter. `tests/regressions.test.ts`
-holds one test per defect found by exploratory testing, named after the defect. External services
-are mocked; the behaviour under test is not.
+`npm test` — 76 vitest tests, no credentials or network. Reuse (a second gather makes zero fetches;
+asking never fetches), refresh semantics, failure safety (a failed refresh keeps earlier evidence and
+its retrieval time, and marks it), model failures (timeout, unparseable or empty reply produce no
+answer), citation and claim verification, key redaction, prompt-delimiter forgery, and the HTTP API
+against a real listening server (`tests/http.test.ts`). `tests/regressions.test.ts` holds one test per
+defect found, named after the defect. External services are mocked; the behaviour under test is not.
 
 `npm run eval` runs four cases — supported, multi-source, insufficient-evidence, repeated — through
 the same `ask` path as an ordinary question and writes JSON and Markdown to `eval/results/`. Each
 file states at the top whether its model outputs are real or mocked.
 
-`npm run explore` is the wider sweep that found most of the defects: 30 questions in 10 categories —
-pricing, product, company, multi-source, insufficient, region, freshness, reuse, adversarial and
-malformed input — through the same path again. `npm run verify:sources` then fetches the live pages
-and checks, independently of `src/extract.ts`, that the figures the answers quoted are really there:
-19 of 19 confirmed. See [`eval/exploratory/`](eval/exploratory/README.md), and
-[`eval/exploratory/FINDINGS.md`](eval/exploratory/FINDINGS.md) for every defect found, its root
-cause, its fix and its regression test.
+`npm run explore` is the wider sweep that found most defects: 30 questions across pricing, product,
+company, multi-source, insufficient, region, freshness, reuse, adversarial and malformed input. A
+further 20 **held-out** questions, written after the fixes and never tuned against, passed their
+checks 20/20; reading the answers found one verification hole (since fixed) and two retrieval misses
+that are documented rather than tuned away (K-01, K-02). `npm run verify:sources` fetches the live
+pages and confirms, independently of `src/extract.ts`, that the figures answers quoted are really
+there: 19/19. Details in [`eval/exploratory/`](eval/exploratory/README.md).
 
-- [`live-model-2026-09-14T10-07-29-030Z.md`](eval/results/live-model-2026-09-14T10-07-29-030Z.md) —
-  **real model output.** `deepseek-flash`, temperature 0, run 2026-09-14; sources retrieved
-  2026-09-14T08:23Z. 4/4 cases passed every check.
-- [`offline-mock-2026-09-14T10-07-28-622Z.md`](eval/results/offline-mock-2026-09-14T10-07-28-622Z.md)
+- [`live-model-2026-09-16T14-26-02-833Z.md`](eval/results/live-model-2026-09-16T14-26-02-833Z.md) —
+  **real model output.** `deepseek-flash`, temperature 0, run 2026-09-16; sources retrieved
+  2026-09-14. 4/4 cases passed every check.
+- [`offline-mock-2026-09-16T14-26-02-380Z.md`](eval/results/offline-mock-2026-09-16T14-26-02-380Z.md)
   — **mocked model output** over synthetic fixtures, plus a demonstration that a failed refresh
   leaves stored evidence and its retrieval time untouched.
 
@@ -158,49 +138,41 @@ verification would then mark rather than prevent.
 
 ## AI usage
 
-Claude Code (Opus 5) wrote most of this implementation from the brief; I reviewed and corrected it as
-it went.
+Claude Code (Opus 5) wrote the implementation, tests and documentation. Runtime answers come from
+DeepSeek, which is separate from the development assistant.
 
-The substantive correction: the first extractor took the text of the nearest block-level element,
-which silently dropped every headline price on the Xero pricing pages — those are bare `<div>`s of
-`<span>`s the selector never matched. The suggested fix, emitting only leaf elements, then lost the
-feature lists, whose text sits beside a nested icon `<div>`. What shipped emits an element only when
-it contributes text its descendants do not (`src/extract.ts`), and promotes `<svg><title>` labels to
-text first so comparison tables keep their "Included" markers. Verified by re-extracting the real
-pages and checking prices and feature lists are present, plus the extraction tests.
+My part was deciding what had to be proven and when a result was not good enough: a real-model run
+of the full reviewer path rather than unit tests alone; then a sweep of realistic and malformed user
+questions with every run archived; then a check of quoted figures against the live pages; then a
+held-out set of questions written after the fixes, to measure whether they generalised rather than
+fitted.
 
-I also rejected the initial chunking, which let passages run across headings and welded three priced
-plans into one passage, so the model could not say which price belonged to which plan. Headings now
-always start a passage.
+The clearest suggestion that did not survive verification: to make Australian prices reachable
+(F-01), Claude Code indexed each source's title and region alongside its passages, and every test
+passed. The next exploratory sweep showed the change had also counted that metadata in document
+frequency, so "customers" in a source description made the passage that actually says "5 million
+customers" rank ninth (F-08). It was corrected with separate body and metadata frequency tables,
+locked in by a regression test, and confirmed by re-running the sweep. The full record of defects,
+causes and fixes is in [`FINDINGS.md`](eval/exploratory/FINDINGS.md).
 
 ## Limitations and cost
 
-**External services:** one OpenAI-compatible chat endpoint (DeepSeek's pay-as-you-go tier as run
-here; a local server works instead). Source pages are fetched anonymously, no API.
+**Services.** One OpenAI-compatible chat endpoint (DeepSeek pay-as-you-go here; a local server works
+instead). Pages are fetched anonymously, honouring `robots.txt`, one request per host per second, a
+20 s timeout and a 5 MB cap.
 
-**Reuse:** after a successful fetch, nothing is refetched or reprocessed until an explicit refresh,
-and a refresh returning identical bytes skips reprocessing. Answering never fetches. The retrieval
-index rebuilds only when the corpus changes.
+**Reuse.** After a successful fetch nothing is refetched until an explicit refresh, and a refresh
+returning identical bytes skips reprocessing. Answering never fetches.
 
-**Cost:** one model call per question, nothing else. Measured over the recorded run: 1.8–2.3k prompt
-and 0.8–1.8k completion tokens per question, 4–8 s latency, with prompt caching covering 1.7–2.2k
-tokens per call. `deepseek-flash` is a reasoning model, so 200–1,450 completion tokens were hidden
-reasoning — the largest and least predictable part of the bill, and why `LLM_MAX_TOKENS` defaults to
-8,000. At higher usage the levers are `RETRIEVAL_TOP_K` (prompt size grows linearly with it) and a
-cheaper non-reasoning model. Answers are not cached, so asking twice costs twice.
+**Cost.** One model call per question. Measured: 1.8–2.5k prompt and 0.8–1.8k completion tokens,
+4–8 s. `deepseek-flash` is a reasoning model, and hidden reasoning (up to ~1.5k tokens) is the largest
+and least predictable cost, hence `LLM_MAX_TOKENS=8000`. At volume the levers are `RETRIEVAL_TOP_K`
+and a non-reasoning model; answers are not cached.
 
-**Known weaknesses:** extraction is heuristic — it keeps some page furniture ("Buy now"), leaves a
-stray fragment on one page, and can drop text sitting directly inside a container beside a nested
-block; the store is one JSON file held in memory, fine at this size but not beyond a few thousand
-passages; retrieval is lexical only and verification is lexical rather than entailment (see the two
-decisions above); one gather or refresh runs at a time with no cross-process locking; there is no
-authentication, so the server is for local use.
+**Known weaknesses.** Retrieval misses paraphrases (K-01, K-02). Verification is lexical, not
+entailment. Extraction is heuristic and keeps some page furniture. The store is one in-memory JSON
+file, fine to a few thousand passages. No cross-process locking and no authentication: local use only.
 
-**Public sources and security.** `src/http.ts` honours `robots.txt` for the requesting user agent and
-applies a one-second minimum gap per host (or the site's `Crawl-delay`, whichever is longer), a
-20-second timeout, a 5 MB cap and bounded retries respecting `Retry-After`. Nothing bypasses a login,
-paywall or bot protection; a page that cannot be fetched appropriately is reported and can be
-replaced in configuration. Retrieved content is delimited in the prompt and the system prompt states
-that instructions inside a passage must be ignored. Credentials live only in `.env` (git-ignored) and
-every error and log line passes through `redact()`. `data/` is git-ignored, so no bulk page content
-is committed; evaluation records contain only short extracts.
+**Security.** Retrieved text is delimited as data and cannot override instructions; credentials live
+only in the git-ignored `.env` and every log and error passes through `redact()`; `data/` is
+git-ignored, so no bulk page content is committed.

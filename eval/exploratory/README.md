@@ -13,6 +13,7 @@ application's behaviour.
 | File | Purpose |
 | --- | --- |
 | [`questions.json`](questions.json) | The question bank: 30 cases in 10 categories, each with what it probes and its checks. |
+| [`questions-held-out.json`](questions-held-out.json) | 20 questions written after the fixes and run without tuning against them. |
 | [`run-exploratory.ts`](run-exploratory.ts) | Runs the bank and archives a JSON and Markdown report. |
 | [`ground-truth.json`](ground-truth.json) | Facts quoted by answers, with the pattern that proves them. |
 | [`verify-ground-truth.ts`](verify-ground-truth.ts) | Fetches the live pages and checks those facts independently. |
@@ -20,10 +21,13 @@ application's behaviour.
 | `results/` | Archived runs, in the order they were produced. |
 
 ```bash
-npm run explore            # the sweep, against the live model
-npm run explore -- --offline
+npm run explore            # the sweep, against the live model (needs credentials)
+npm run explore -- --bank eval/exploratory/questions-held-out.json --label <name>
 npm run verify:sources     # independent fact check against the live pages
 ```
+
+There is deliberately no offline mode: these questions test what a real model does with real
+evidence. The credential-free paths are `npm test` and `npm run eval -- --offline`.
 
 ## Categories
 
@@ -61,6 +65,9 @@ Kept in sequence, so the effect of each fix is visible rather than asserted.
 | `04-after-price-facet-29of30` | 29/30 | After adding the price facet; a different case now exposed the facet being too broad. |
 | `05-after-citation-prompt-29of30` | 29/30 | After requiring a claim to cite every passage it draws on. |
 | `06-final-all-pass-30of30` | 30/30 | All categories pass. |
+| `07-held-out-first-run` | 20/20 | Held-out questions, first and only untuned run. Manual reading found one verification hole and two recall misses. |
+| `08-original-30-before-submission` | 30/30 | The original bank re-run after the pre-submission fixes: no regressions. |
+| `09-held-out-after-claim-language-fix` | 20/20 | Held-out re-run after fixing the hole; the two recall misses remain and are documented. |
 | `ground-truth-01-…-15of19` | 15/19 | Four facts unverified: the checker could not reach Wikipedia, which exposed a shared-configuration defect. |
 | `ground-truth-02-…-18of19` | 18/19 | After extracting the connection setting into `src/net.ts`. |
 | `ground-truth-03-final-19of19` | 19/19 | Every quoted fact confirmed on the live page and in the stored research. |

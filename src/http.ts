@@ -90,7 +90,9 @@ function retryAfterMs(response: Response): number | null {
 
 /**
  * Fetch one public HTML page, honouring robots.txt, a per-host rate limit, a
- * request timeout, a response size cap, and bounded retries for transient errors.
+ * request timeout and a response size cap. Rate limits (429, honouring
+ * Retry-After), 5xx responses and timeouts are retried a bounded number of
+ * times; other network errors and 4xx responses fail immediately.
  */
 export const fetchPage: PageFetcher = async (url: string): Promise<PageResponse> => {
   const parsed = new URL(url);

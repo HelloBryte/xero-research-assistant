@@ -22,7 +22,14 @@ was wrongly flagged; **low** means untidy behaviour with no wrong answer.
 | [F-11](#f-11) | high | A compound claim cited only one of the passages it drew on | Exploratory, `region` |
 | [F-12](#f-12) | medium | Verbatim-correct claims failed because they were verbose | Exploratory, `product` |
 | [F-13](#f-13) | medium | A connection fix applied to one entry point only | Ground-truth check |
-| [H-01](#h-01) … [H-03](#h-03) | — | Defects in the test harness itself | Reviewing failures |
+| [F-14](#f-14) | high | An empty source list deleted all stored research | Pre-submission debug |
+| [F-15](#f-15) | high | A model reply with no answer text was returned as a result | Pre-submission debug |
+| [F-16](#f-16) | high | Claims in another script were reported as verified | Held-out manual review |
+| [F-17](#f-17) | medium | Source ids that break passage ids and URLs were accepted | Pre-submission debug |
+| [F-18](#f-18) | low | Client mistakes were reported as server errors | Pre-submission debug |
+| [F-19](#f-19) | low | Temp-file cleanup never matched the files it should remove | Pre-submission debug |
+| [K-01](#k-01), [K-02](#k-02) | — | Known recall misses, measured and deliberately not tuned | Held-out evaluation |
+| [H-01](#h-01) … [H-04](#h-04) | — | Defects in the test harness itself | Reviewing failures |
 
 ---
 
@@ -217,6 +224,116 @@ advertised but unreachable, requests fail. The workaround was a module side effe
 
 **Fix.** `src/net.ts` exports `configureConnectionTimeouts()`, called explicitly by both.
 
+## F-14
+**An empty source list deleted all stored research.** *(high)*
+
+**Cause.** Configuration is the source of truth, so gathering prunes evidence for any source no
+longer listed. `{"sources": []}` passed validation, and the next gather removed every stored source.
+An empty edit never means "delete everything".
+
+**Fix.** `loadSources` refuses an empty list and says why. It also now names the file when the JSON
+is malformed; the old message was a bare character position.
+
+**Test.** `tests/regressions.test.ts` — "refuses an empty source list…", "names the file…".
+
+## F-15
+**A model reply with no answer text was returned as a result.** *(high)*
+
+**Cause.** `parseModelJson` checked that the reply was a JSON object and nothing more. A reply with
+the `answer` field missing, empty, blank or a number was returned to the user as a successful, empty
+answer — the "invalid response presented as a successful result" the brief rules out.
+
+**Fix.** A reply without non-empty answer text is a `ModelFailure` of kind `invalid_response`, which
+the API reports as 502 with no answer field.
+
+**Test.** `tests/regressions.test.ts` — "treats well-formed JSON without answer text…";
+`tests/http.test.ts` — "reports a model reply with no answer text as a failure".
+
+## F-16
+**Claims in another script were reported as verified.** *(high)*
+
+**Symptom.** Asked `Xero 的 Grow 套餐多少钱`, the model answered in Chinese and wrote its claims in
+Chinese; every claim was marked `supported`. A deliberately wrong claim — Grow `不含 GST` ("excludes
+GST") and supports unlimited employees — was *also* marked `supported`.
+
+**Cause.** The tokenizer drops non-Latin script, so that claim reduced to `[grow, 7.80, gst]`, which
+overlaps the evidence perfectly. The verifier was reporting text it could not read as checked.
+
+**Fix.** Two layers. The prompt now asks for claims in English, the language of the passages, while
+the answer itself may follow the user's language. And the verifier no longer trusts the prompt: a
+claim that is mostly non-Latin script is capped at `weak`, with the reason that only its figures were
+checked. After the fix the same question gets a Chinese answer with English claims, all genuinely
+verified.
+
+**Test.** `tests/regressions.test.ts` — "does not report a claim in another script as supported",
+plus guards that a wrong figure is still rejected and English claims are unaffected.
+
+## F-17
+**Source ids that break passage ids and URLs were accepted.** *(medium)*
+
+Ids become passage ids (`<id>#<n>`) and a URL path segment (`/api/sources/<id>/passages`), yet `#`,
+`/` and spaces were accepted. `loadSources` now requires letters, digits, `-` and `_`.
+
+**Test.** `tests/regressions.test.ts` — "refuses source ids that would break passage ids or URL paths".
+
+## F-18
+**Client mistakes were reported as server errors.** *(low)*
+
+Malformed JSON and a body over 32 KB both returned **500 `server_error`**, telling a caller the
+application had failed when it had correctly refused bad input. The error handler in `src/app.ts`
+now passes the body parser's 4xx status through as `invalid_json` (400) or `payload_too_large`
+(413). An unknown source id on `/api/sources/<id>/passages` now returns 404 instead of an empty 200.
+To make this testable, the API moved into `createApp()` in `src/app.ts`; `src/server.ts` only listens.
+
+**Test.** `tests/http.test.ts`, which runs a real listening server around a fake fetcher and model.
+
+## F-19
+**Temp-file cleanup never matched the files it should remove.** *(low)*
+
+`persist()` writes `store.json.<pid>.tmp`; `cleanTemp()` looked for `store.json.tmp`, which nothing
+writes, so it never removed anything. Atomic rename still protected the store itself, but a crashed
+write left debris behind forever.
+
+**Test.** `tests/regressions.test.ts` — "removes the temp files a crashed write actually leaves behind".
+
+---
+
+## Held-out evaluation
+
+The 30 questions in `questions.json` drove the fixes above, so passing them is partly true by
+construction. `questions-held-out.json` holds 20 questions written afterwards in different phrasings
+— lowercase, shouting, typos, mixed Chinese and English, context-free follow-ups, out-of-scope
+support questions — and run **without tuning retrieval or prompts against them**.
+
+| Run | Mechanical checks | Manual reading of the answers |
+| --- | --- | --- |
+| `07-held-out-first-run` | 20/20 | 17 good; 2 recall misses (K-01, K-02); 1 verification hole (F-16) |
+| `09-held-out-after-claim-language-fix` | 20/20 | F-16 fixed; K-01 and K-02 unchanged, as expected |
+
+Mechanical checks passing is not the same as a good answer: they verify the claims a model lists,
+and cannot see prose it chose not to list. So every held-out answer was also read. Examples of what
+that reading confirmed: *"How much is the Ultimate plan if I have 20 employees?"* declined to
+extrapolate from Ultimate 10; *"How much does Xero cost in New Zealand?"* refused to present AUD or
+USD prices as NZ prices; *"What's the phone number for Xero customer support?"* invented no number;
+*"how much is the grwo plan pirce"* still reached the Grow plan through the price facet.
+
+## K-01
+**"Who runs Xero?" answers that the research names no one.** The store holds *"Steve Vamos was
+appointed as CEO"* and *"Sukhinder Singh Cassidy, the CEO of Xero"*. The question tokenizes to `run,
+xero`, and `run` matches *"pay runs"* and *"Run an efficient practice"* instead: a word-sense
+collision plus a vocabulary gap (`runs` ≠ `CEO`). Notably, the model did not fill the gap from its
+own knowledge of Xero's leadership; it said the supplied passages did not establish it.
+
+## K-02
+**"what plans does xero have" names no plan.** Plan names live in passage headings such as `Grow`
+and `Early`, and nothing in the question matches them; `plan` matches marketing copy about plans
+instead. The answer is honest (`partial`) but unhelpful.
+
+**Why these are not fixed.** Both are the vocabulary-mismatch limitation stated in design decision 1,
+now measured rather than assumed. Adding synonyms for "runs" or "plans" would make these two
+questions pass while saying nothing about the next paraphrase, and would turn a held-out measurement
+into a tuned one. The fix that would generalise is semantic retrieval alongside BM25.
+
 ---
 
 ## Defects in the test harness
@@ -231,6 +348,12 @@ and the retrieval time each of those passages carries.
 ### H-02
 The prompt-injection check searched the answer for the injected word. Quoting `HACKED` while
 refusing to output it is correct behaviour; the check now fails only if the answer *is* that word.
+
+### H-04
+`npm run explore -- --offline` was documented and accepted, but still called the real model while
+labelling every output **MOCKED** — mislabelled evidence, in exactly the place the brief asks for real
+and mocked outputs to be clearly distinguished. The sweep has no meaningful offline form, so the flag
+is now refused.
 
 ### H-03
 Two regression tests asserted the wrong thing: one expected the per-source cap to shrink the result

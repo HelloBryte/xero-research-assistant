@@ -11,10 +11,14 @@
  * mechanical pass or fail. Nothing is hard-coded per question and no model
  * grades another model.
  *
- *   npm run explore              live model against the stored research
- *   npm run explore -- --offline scripted model over fixtures, no credentials
+ *   npm run explore
+ *   npm run explore -- --bank eval/exploratory/questions-held-out.json --label 07-held-out
  *
- * Results are archived under eval/exploratory/results/<timestamp>/.
+ * This needs a real model: exploratory questions are about what a model does
+ * with real evidence, so there is no mocked mode. The credential-free paths are
+ * `npm test` and `npm run eval -- --offline`.
+ *
+ * Results are archived under eval/exploratory/results/<label or timestamp>/.
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -191,16 +195,30 @@ function runChecks(
   return checks;
 }
 
+function argument(name: string): string | undefined {
+  const index = process.argv.indexOf(name);
+  return index >= 0 ? process.argv[index + 1] : undefined;
+}
+
 async function main(): Promise<number> {
-  const offline = process.argv.includes('--offline');
-  if (!offline && !llmConfigured()) {
-    console.error('No model credentials configured. Set LLM_API_KEY in .env, or run with --offline.');
+  // An earlier version accepted --offline but still called the real model while
+  // labelling its outputs "MOCKED". Mislabelled evidence is worse than none, so
+  // the flag is refused outright.
+  if (process.argv.includes('--offline')) {
+    console.error('The exploratory sweep has no offline mode. Use `npm test` or `npm run eval -- --offline`.');
+    return 2;
+  }
+  if (!llmConfigured()) {
+    console.error('No model credentials configured. Set LLM_API_KEY in .env.');
     return 2;
   }
 
-  const bank = JSON.parse(
-    readFileSync(resolve(projectRoot, 'eval/exploratory/questions.json'), 'utf8'),
-  ) as { categories: Record<string, string>; cases: ExploratoryCase[] };
+  const bankPath = argument('--bank') ?? 'eval/exploratory/questions.json';
+  const label = argument('--label');
+  const bank = JSON.parse(readFileSync(resolve(projectRoot, bankPath), 'utf8')) as {
+    categories: Record<string, string>;
+    cases: ExploratoryCase[];
+  };
 
   const service = new ResearchService();
   const startedAt = new Date().toISOString();
@@ -282,12 +300,13 @@ async function main(): Promise<number> {
   }
 
   const run = {
-    mode: offline ? 'offline-mock' : 'live-model',
-    modelOutputs: offline ? 'MOCKED' : 'REAL — replies come from the configured model endpoint',
+    mode: 'live-model',
+    modelOutputs: 'REAL — replies come from the configured model endpoint',
+    bank: bankPath,
     startedAt,
     finishedAt: new Date().toISOString(),
-    model: offline ? 'scripted-offline-mock' : config.llm.model,
-    endpoint: offline ? 'n/a' : config.llm.baseUrl,
+    model: config.llm.model,
+    endpoint: config.llm.baseUrl,
     configuration: {
       temperature: config.llm.temperature,
       maxTokens: config.llm.maxTokens,
@@ -323,7 +342,7 @@ async function main(): Promise<number> {
   };
 
   const stamp = startedAt.replace(/[:.]/g, '-');
-  const directory = join(resolve(projectRoot, 'eval/exploratory/results'), `${run.mode}-${stamp}`);
+  const directory = join(resolve(projectRoot, 'eval/exploratory/results'), label ?? `${run.mode}-${stamp}`);
   mkdirSync(directory, { recursive: true });
   writeFileSync(join(directory, 'results.json'), `${JSON.stringify(run, null, 2)}\n`, 'utf8');
   writeFileSync(join(directory, 'report.md'), renderMarkdown(run), 'utf8');
@@ -340,6 +359,7 @@ type Run = Awaited<ReturnType<typeof buildRun>>;
 declare function buildRun(): Promise<{
   mode: string;
   modelOutputs: string;
+  bank: string;
   startedAt: string;
   model: string;
   endpoint: string;
@@ -370,6 +390,7 @@ function renderMarkdown(run: Run): string {
   lines.push('# Exploratory test run');
   lines.push('');
   lines.push(`**Model outputs:** ${run.modelOutputs}`);
+  lines.push(`**Question bank:** \`${run.bank}\``);
   lines.push(`**Model:** \`${run.model}\` via \`${run.endpoint}\`, temperature ${run.configuration.temperature}`);
   lines.push(`**Retrieval:** top ${run.configuration.retrievalTopK}, max ${run.configuration.retrievalMaxPerSource} per source`);
   lines.push(`**Run started:** ${run.startedAt}`);

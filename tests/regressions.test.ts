@@ -5,11 +5,14 @@
  * back rather than which assertion tripped. The exploratory reports that found
  * them are archived under eval/exploratory/results/.
  */
-import { mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { ActivityLog } from '../src/activity.js';
+import { parseModelJson } from '../src/answer.js';
+import { loadSources } from '../src/config.js';
+import { ResearchStore } from '../src/store.js';
 import { RetrievalIndex, tokenize } from '../src/retrieve.js';
 import { checkClaim } from '../src/verify.js';
 import { createHarness, fakeModel, html, type Harness } from './helpers.js';
@@ -243,5 +246,105 @@ describe('questions the index cannot search', () => {
 
     expect(result.answer).toMatch(/contains no passage related/i);
     expect(result.answer).not.toMatch(/could not be searched/i);
+  });
+});
+
+describe('source configuration', () => {
+  function load(content: string) {
+    const directory = mkdtempSync(join(tmpdir(), 'xero-config-'));
+    const file = join(directory, 'sources.json');
+    writeFileSync(file, content, 'utf8');
+    try {
+      return { result: loadSources(file), error: null as Error | null, file };
+    } catch (error) {
+      return { result: null, error: error as Error, file };
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  }
+
+  it('refuses an empty source list rather than letting gather delete all stored research', () => {
+    // Gather prunes evidence for sources no longer configured, so an empty list
+    // used to wipe every stored source on the next run.
+    const { error } = load('{"sources": []}');
+    expect(error?.message).toMatch(/no sources/i);
+  });
+
+  it('names the file when it is not valid JSON', () => {
+    const { error, file } = load('{"sources": [{"id": "a", "url": "https://x.test/"} {"id": "b"}]}');
+    expect(error?.message).toContain(file);
+    expect(error?.message).toMatch(/not valid JSON/);
+  });
+
+  it('refuses source ids that would break passage ids or URL paths', () => {
+    for (const id of ['xero#1', 'xero/pricing', 'xero pricing', '-leading']) {
+      const { error } = load(JSON.stringify({ sources: [{ id, url: 'https://x.test/' }] }));
+      expect(error, id).not.toBeNull();
+    }
+    expect(load('{"sources": [{"id": "xero-pricing_au", "url": "https://x.test/"}]}').error).toBeNull();
+  });
+});
+
+describe('claims the verifier cannot read', () => {
+  const passage = {
+    heading: 'Grow',
+    text: '$7.80 per month\nThen $78 per month\nIncluded Payroll for 2 people\nPrices are in AUD and include GST.',
+  };
+
+  it('does not report a claim in another script as supported', () => {
+    // Tokenisation drops the Chinese entirely, leaving [grow, 7.80, gst]: a
+    // perfect overlap for a claim that says prices EXCLUDE GST.
+    const wrong = 'Grow 套餐每月 $7.80，不含 GST，而且支持无限员工的工资发放。';
+    const check = checkClaim(wrong, [passage]);
+    expect(check.verdict).toBe('weak');
+    expect(check.reason).toMatch(/only its figures could be checked/);
+  });
+
+  it('still rejects a wrong figure in a claim written in another script', () => {
+    expect(checkClaim('Grow 套餐每月 $9.99', [passage]).verdict).toBe('unsupported');
+  });
+
+  it('leaves English claims with a few non-Latin characters alone', () => {
+    expect(checkClaim('The Grow plan is $7.80 per month, then $78 per month (套餐).', [passage]).verdict).toBe(
+      'supported',
+    );
+  });
+});
+
+describe('model reply validation', () => {
+  it('treats well-formed JSON without answer text as an invalid response', () => {
+    // These used to be returned to the user as successful, empty answers.
+    for (const raw of [
+      '{"status": "answered", "claims": []}',
+      '{"status": "answered", "answer": "", "claims": []}',
+      '{"status": "answered", "answer": "   ", "claims": []}',
+      '{"status": "answered", "answer": 42, "claims": []}',
+    ]) {
+      expect(() => parseModelJson(raw), raw).toThrow(/no "answer" text/);
+    }
+    expect(parseModelJson('{"status": "insufficient", "answer": "Not covered.", "claims": []}').answer).toBe(
+      'Not covered.',
+    );
+  });
+});
+
+describe('store temp files', () => {
+  it('removes the temp files a crashed write actually leaves behind', () => {
+    // persist() writes store.json.<pid>.tmp; cleanup looked for store.json.tmp,
+    // which nothing writes, so it never removed anything.
+    const directory = mkdtempSync(join(tmpdir(), 'xero-store-'));
+    try {
+      const stray = join(directory, 'store.json.12345.tmp');
+      const unrelated = join(directory, 'notes.tmp');
+      writeFileSync(stray, '{"half":', 'utf8');
+      writeFileSync(unrelated, 'keep me', 'utf8');
+
+      ResearchStore.cleanTemp(directory);
+
+      expect(existsSync(stray)).toBe(false);
+      expect(existsSync(unrelated)).toBe(true);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
   });
 });

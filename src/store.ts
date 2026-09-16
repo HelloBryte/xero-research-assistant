@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, renameSync, writeFileSync, existsSync, rmSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync, existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { config } from './config.js';
 import type { Chunk, SourceRecord, StoreData, StoredFailure } from './types.js';
@@ -61,12 +61,16 @@ export class ResearchStore {
     renameSync(temp, this.file);
   }
 
-  /** Discard any temporary files left behind by a crashed write. */
+  /**
+   * Discard temporary files left behind by a crashed write.
+   *
+   * `persist` names its temp file `store.json.<pid>.tmp`; this used to look for
+   * `store.json.tmp`, which nothing ever writes, so it never removed anything.
+   */
   static cleanTemp(dataDir: string = config.dataDir): void {
-    const file = join(dataDir, 'store.json');
-    for (const suffix of ['.tmp']) {
-      const candidate = `${file}${suffix}`;
-      if (existsSync(candidate)) rmSync(candidate);
+    if (!existsSync(dataDir)) return;
+    for (const name of readdirSync(dataDir)) {
+      if (/^store\.json\.\d+\.tmp$/.test(name)) rmSync(join(dataDir, name));
     }
   }
 

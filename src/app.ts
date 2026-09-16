@@ -1,0 +1,160 @@
+import express, { type Express, type NextFunction, type Request, type Response } from 'express';
+import { join } from 'node:path';
+import { projectRoot, redact } from './config.js';
+import { ModelFailure } from './llm.js';
+import type { ResearchService } from './service.js';
+
+/**
+ * The HTTP API, built around an injected service so it can be exercised in tests
+ * without a network, a model or a listening process. `src/server.ts` is only the
+ * entry point that listens.
+ */
+export function createApp(service: ResearchService): Express {
+  const app = express();
+
+  app.use(express.json({ limit: '32kb' }));
+  app.use(express.static(join(projectRoot, 'public')));
+
+  /** Research runs touch the network and the store; one at a time keeps both honest. */
+  let researchInFlight: Promise<unknown> | null = null;
+
+  const wrap =
+    (handler: (req: Request, res: Response) => Promise<void> | void) =>
+    (req: Request, res: Response, next: NextFunction) => {
+      Promise.resolve(handler(req, res)).catch(next);
+    };
+
+  app.get('/api/status', wrap((_req, res) => {
+    res.json({ ...service.status(), researchInProgress: researchInFlight !== null });
+  }));
+
+  for (const mode of ['gather', 'refresh'] as const) {
+    app.post(
+      `/api/${mode}`,
+      wrap(async (req, res) => {
+        if (researchInFlight) {
+          res.status(409).json({ error: { kind: 'busy', message: 'A research run is already in progress.' } });
+          return;
+        }
+        const only = asStringArray(req.body?.only);
+        const force = req.body?.force === true;
+        const task = mode === 'gather' ? service.gather({ only }) : service.refresh({ only, force });
+        researchInFlight = task;
+        try {
+          // A run that reports failures still succeeded as a request: the report
+          // is the answer, and it distinguishes what was refreshed from what was
+          // left at its earlier retrieval time.
+          res.json(await task);
+        } finally {
+          researchInFlight = null;
+        }
+      }),
+    );
+  }
+
+  app.post(
+    '/api/ask',
+    wrap(async (req, res) => {
+      const question = typeof req.body?.question === 'string' ? req.body.question.trim() : '';
+      if (!question) {
+        res.status(400).json({ error: { kind: 'bad_request', message: 'A "question" string is required.' } });
+        return;
+      }
+      const topK = typeof req.body?.topK === 'number' ? req.body.topK : undefined;
+      try {
+        res.json(await service.ask(question, { topK }));
+      } catch (error) {
+        if (error instanceof ModelFailure) {
+          // No answer is returned at all, so a failure cannot be mistaken for one.
+          res.status(502).json({
+            error: {
+              kind: error.kind,
+              message: error.message,
+              detail: 'No answer was generated. The stored research is unchanged.',
+            },
+          });
+          return;
+        }
+        throw error;
+      }
+    }),
+  );
+
+  app.get('/api/preview', wrap((req, res) => {
+    const question = typeof req.query.q === 'string' ? req.query.q : '';
+    if (!question) {
+      res.status(400).json({ error: { kind: 'bad_request', message: 'Query parameter "q" is required.' } });
+      return;
+    }
+    const result = service.preview(question);
+    res.json({
+      ...result,
+      results: result.results.map((item) => ({
+        chunkId: item.chunk.id,
+        sourceId: item.chunk.sourceId,
+        heading: item.chunk.heading,
+        score: item.score,
+        text: item.chunk.text,
+      })),
+    });
+  }));
+
+  app.get('/api/sources', wrap((_req, res) => {
+    res.json({ configured: service.sources, stored: service.status().sources });
+  }));
+
+  app.get('/api/sources/:id/passages', wrap((req, res) => {
+    const id = String(req.params.id ?? '');
+    if (!service.status().sources.some((source) => source.id === id)) {
+      res.status(404).json({ error: { kind: 'not_found', message: `No stored source with id "${id}".` } });
+      return;
+    }
+    res.json({ sourceId: id, passages: service.passagesForSource(id) });
+  }));
+
+  // Passage ids contain '#', so they travel as a query parameter rather than a path segment.
+  app.get('/api/passage', wrap((req, res) => {
+    const id = typeof req.query.id === 'string' ? req.query.id : '';
+    const found = id ? service.trace(id) : null;
+    if (!found) {
+      res.status(404).json({ error: { kind: 'not_found', message: `No stored passage with id "${id}".` } });
+      return;
+    }
+    res.json(found);
+  }));
+
+  app.get('/api/activity', wrap((req, res) => {
+    const limit = Number(req.query.limit ?? 60);
+    res.json({ events: service.activity.tail(Number.isFinite(limit) ? limit : 60) });
+  }));
+
+  app.use((error: Error & { status?: number; type?: string }, _req: Request, res: Response, _next: NextFunction) => {
+    const message = redact(error.message || 'Unexpected error');
+
+    // The JSON body parser rejects malformed and oversized requests with a 4xx
+    // status on the error. Those are the client's mistake; reporting them as a
+    // 500 "server_error" told a caller the application had failed when it had
+    // correctly refused bad input.
+    if (typeof error.status === 'number' && error.status >= 400 && error.status < 500) {
+      const kind =
+        error.type === 'entity.too.large'
+          ? 'payload_too_large'
+          : error.type === 'entity.parse.failed'
+            ? 'invalid_json'
+            : 'bad_request';
+      res.status(error.status).json({ error: { kind, message } });
+      return;
+    }
+
+    process.stderr.write(`[server] ${message}\n`);
+    res.status(500).json({ error: { kind: 'server_error', message } });
+  });
+
+  return app;
+}
+
+function asStringArray(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const ids = value.filter((item): item is string => typeof item === 'string');
+  return ids.length ? ids : undefined;
+}

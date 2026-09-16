@@ -33,6 +33,8 @@ Reply with a single JSON object and nothing else:
 
 "claims" must decompose the answer into its substantive factual statements about Xero, each with the labels that support it. Do not include a claim without evidence labels.
 
+Write "answer", "unknowns" and "notes" in the language of the question. Write every claim's "text" in English, the language of the passages, staying close to the passage wording: claims are checked word by word against the evidence, and a claim in another language cannot be verified.
+
 A claim must cite every passage it draws on. If a figure comes from one passage and the condition attached to it comes from another, cite both labels on that claim; a claim quoting a figure that its own cited passages do not contain will be rejected.
 
 A claim must be a statement about Xero that the cited passages contain. It must not be a statement about the evidence itself: what a passage says, omits, does not specify, or fails to establish is not a claim. Put anything the passages do not establish in "unknowns" instead. Framing ("here is what the sources say") is not a claim either.`;

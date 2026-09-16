@@ -1,8 +1,8 @@
 {
   "mode": "offline-mock",
   "modelOutputs": "MOCKED — replies come from eval/run-eval.ts scriptedModel, not from a language model",
-  "startedAt": "2026-09-14T10:07:28.622Z",
-  "finishedAt": "2026-09-14T10:07:28.645Z",
+  "startedAt": "2026-09-16T14:26:02.380Z",
+  "finishedAt": "2026-09-16T14:26:02.404Z",
   "model": "scripted-offline-mock",
   "endpoint": "n/a (no network)",
   "configuration": {
@@ -31,8 +31,8 @@
         "id": "wikipedia-xero",
         "title": "Company entry (fixture)",
         "url": "https://fixture.invalid/encyclopedia",
-        "retrievedAt": "2026-09-14T10:07:28.631Z",
-        "contentChangedAt": "2026-09-14T10:07:28.631Z",
+        "retrievedAt": "2026-09-16T14:26:02.389Z",
+        "contentChangedAt": "2026-09-16T14:26:02.389Z",
         "passages": 2,
         "lastError": null
       },
@@ -40,8 +40,8 @@
         "id": "xero-about",
         "title": "About the company (fixture)",
         "url": "https://fixture.invalid/about",
-        "retrievedAt": "2026-09-14T10:07:28.630Z",
-        "contentChangedAt": "2026-09-14T10:07:28.630Z",
+        "retrievedAt": "2026-09-16T14:26:02.388Z",
+        "contentChangedAt": "2026-09-16T14:26:02.388Z",
         "passages": 2,
         "lastError": null
       },
@@ -49,8 +49,8 @@
         "id": "xero-pricing-au",
         "title": "Plans and pricing (fixture, Australia)",
         "url": "https://fixture.invalid/pricing-au",
-        "retrievedAt": "2026-09-14T10:07:28.623Z",
-        "contentChangedAt": "2026-09-14T10:07:28.623Z",
+        "retrievedAt": "2026-09-16T14:26:02.381Z",
+        "contentChangedAt": "2026-09-16T14:26:02.381Z",
         "passages": 3,
         "lastError": null
       }
@@ -73,7 +73,7 @@
           "chunkId": "xero-pricing-au#0",
           "sourceTitle": "Plans and pricing (fixture, Australia)",
           "url": "https://fixture.invalid/pricing-au",
-          "retrievedAt": "2026-09-14T10:07:28.623Z",
+          "retrievedAt": "2026-09-16T14:26:02.381Z",
           "heading": "Grow",
           "snippet": "$7.80 per month\nThen $78 per month. Go beyond the basics with automated tasks and performance dashboards.\nPayroll for 2 people\n60 day cashflow forecast"
         },
@@ -82,7 +82,7 @@
           "chunkId": "xero-pricing-au#1",
           "sourceTitle": "Plans and pricing (fixture, Australia)",
           "url": "https://fixture.invalid/pricing-au",
-          "retrievedAt": "2026-09-14T10:07:28.623Z",
+          "retrievedAt": "2026-09-16T14:26:02.381Z",
           "heading": "Comprehensive",
           "snippet": "$10.70 per month\nThen $107 per month. Adds multi-currency and expense claims for 5 users."
         },
@@ -91,7 +91,7 @@
           "chunkId": "xero-about#1",
           "sourceTitle": "About the company (fixture)",
           "url": "https://fixture.invalid/about",
-          "retrievedAt": "2026-09-14T10:07:28.630Z",
+          "retrievedAt": "2026-09-16T14:26:02.388Z",
           "heading": "Who we help",
           "snippet": "We help small businesses, accountants and bookkeepers automate, collaborate and grow."
         },
@@ -100,7 +100,7 @@
           "chunkId": "xero-pricing-au#2",
           "sourceTitle": "Plans and pricing (fixture, Australia)",
           "url": "https://fixture.invalid/pricing-au",
-          "retrievedAt": "2026-09-14T10:07:28.623Z",
+          "retrievedAt": "2026-09-16T14:26:02.381Z",
           "heading": "Pricing terms",
           "snippet": "Prices are in AUD and include GST. Subscriptions auto-renew monthly until cancelled."
         }
@@ -237,7 +237,7 @@
           "chunkId": "xero-about#0",
           "sourceTitle": "About the company (fixture)",
           "url": "https://fixture.invalid/about",
-          "retrievedAt": "2026-09-14T10:07:28.630Z",
+          "retrievedAt": "2026-09-16T14:26:02.388Z",
           "heading": "Our reach",
           "snippet": "The company serves 5 million customers in 180+ countries and leads cloud accounting in NZ, AU and the UK."
         },
@@ -246,7 +246,7 @@
           "chunkId": "wikipedia-xero#0",
           "sourceTitle": "Company entry (fixture)",
           "url": "https://fixture.invalid/encyclopedia",
-          "retrievedAt": "2026-09-14T10:07:28.631Z",
+          "retrievedAt": "2026-09-16T14:26:02.389Z",
           "heading": "History",
           "snippet": "The company was founded on 6 July 2006 by two founders in Wellington, New Zealand, where its headquarters remain.\nIt listed on the New Zealand Exchange in June 2007."
         }
@@ -418,7 +418,7 @@
           "chunkId": "xero-pricing-au#0",
           "sourceTitle": "Plans and pricing (fixture, Australia)",
           "url": "https://fixture.invalid/pricing-au",
-          "retrievedAt": "2026-09-14T10:07:28.623Z",
+          "retrievedAt": "2026-09-16T14:26:02.381Z",
           "heading": "Grow",
           "snippet": "$7.80 per month\nThen $78 per month. Go beyond the basics with automated tasks and performance dashboards.\nPayroll for 2 people\n60 day cashflow forecast"
         },
@@ -427,7 +427,7 @@
           "chunkId": "xero-pricing-au#1",
           "sourceTitle": "Plans and pricing (fixture, Australia)",
           "url": "https://fixture.invalid/pricing-au",
-          "retrievedAt": "2026-09-14T10:07:28.623Z",
+          "retrievedAt": "2026-09-16T14:26:02.381Z",
           "heading": "Comprehensive",
           "snippet": "$10.70 per month\nThen $107 per month. Adds multi-currency and expense claims for 5 users."
         },
@@ -436,7 +436,7 @@
           "chunkId": "xero-about#1",
           "sourceTitle": "About the company (fixture)",
           "url": "https://fixture.invalid/about",
-          "retrievedAt": "2026-09-14T10:07:28.630Z",
+          "retrievedAt": "2026-09-16T14:26:02.388Z",
           "heading": "Who we help",
           "snippet": "We help small businesses, accountants and bookkeepers automate, collaborate and grow."
         },
@@ -445,7 +445,7 @@
           "chunkId": "xero-pricing-au#2",
           "sourceTitle": "Plans and pricing (fixture, Australia)",
           "url": "https://fixture.invalid/pricing-au",
-          "retrievedAt": "2026-09-14T10:07:28.623Z",
+          "retrievedAt": "2026-09-16T14:26:02.381Z",
           "heading": "Pricing terms",
           "snippet": "Prices are in AUD and include GST. Subscriptions auto-renew monthly until cancelled."
         }
@@ -570,7 +570,7 @@
         "sourceId": "xero-pricing-au",
         "outcome": "failed",
         "error": "http_error",
-        "servingEvidenceFrom": "2026-09-14T10:07:28.623Z"
+        "servingEvidenceFrom": "2026-09-16T14:26:02.381Z"
       },
       {
         "sourceId": "xero-about",
@@ -588,11 +588,11 @@
     "evidenceSurvived": {
       "passagesBefore": 3,
       "passagesAfter": 3,
-      "retrievedAtBefore": "2026-09-14T10:07:28.623Z",
-      "retrievedAtAfter": "2026-09-14T10:07:28.623Z",
+      "retrievedAtBefore": "2026-09-16T14:26:02.381Z",
+      "retrievedAtAfter": "2026-09-16T14:26:02.381Z",
       "retrievalTimeUnchanged": true,
       "recordedError": {
-        "at": "2026-09-14T10:07:28.644Z",
+        "at": "2026-09-16T14:26:02.402Z",
         "kind": "http_error",
         "message": "Simulated 503 from the pricing page",
         "httpStatus": 503
@@ -601,7 +601,7 @@
     "answerAfterFailure": {
       "status": "answered",
       "warnings": [
-        "Plans and pricing (fixture, Australia): the most recent refresh attempt failed (http_error at 2026-09-14T10:07:28.644Z); evidence shown was retrieved 2026-09-14T10:07:28.623Z"
+        "Plans and pricing (fixture, Australia): the most recent refresh attempt failed (http_error at 2026-09-16T14:26:02.402Z); evidence shown was retrieved 2026-09-16T14:26:02.381Z"
       ],
       "citationsMarkedStale": 2
     }

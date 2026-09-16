@@ -90,18 +90,40 @@ export function redact(text: string): string {
   return out.replace(/\b(sk-[A-Za-z0-9]{8,})\b/g, '[redacted-api-key]');
 }
 
+const SOURCE_ID = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
+
 export function loadSources(file: string = config.sourcesFile): SourceConfig[] {
   if (!existsSync(file)) throw new Error(`Source configuration not found at ${file}`);
-  const parsed: unknown = JSON.parse(readFileSync(file, 'utf8'));
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(readFileSync(file, 'utf8'));
+  } catch (error) {
+    // Editing this file is the documented way to add or replace a source, so a
+    // syntax slip must say which file it is in, not just a character position.
+    throw new Error(`${file} is not valid JSON: ${(error as Error).message}`);
+  }
   const list = Array.isArray(parsed)
     ? parsed
     : (parsed as { sources?: unknown })?.sources;
   if (!Array.isArray(list)) throw new Error(`${file} must contain an array or a { "sources": [...] } object`);
+  if (list.length === 0) {
+    // Configuration is the source of truth, and gathering prunes evidence for
+    // any source no longer configured. An empty list therefore deleted every
+    // stored source on the next run. That is never what an empty edit means.
+    throw new Error(
+      `${file} lists no sources. At least one is required: an empty list would remove all stored research.`,
+    );
+  }
 
   const seen = new Set<string>();
   return list.map((entry, i) => {
     const s = entry as Partial<SourceConfig>;
     if (!s || typeof s.id !== 'string' || !s.id.trim()) throw new Error(`Source #${i + 1} is missing "id"`);
+    // Ids become passage ids ("<id>#<n>") and a URL path segment
+    // (/api/sources/<id>/passages); "#", "/" or spaces break both.
+    if (!SOURCE_ID.test(s.id)) {
+      throw new Error(`Source id "${s.id}" may only use letters, digits, "-" and "_", starting with a letter or digit`);
+    }
     if (typeof s.url !== 'string' || !/^https?:\/\//i.test(s.url)) {
       throw new Error(`Source "${s.id}" needs an http(s) "url"`);
     }

@@ -101,6 +101,21 @@ export function checkClaim(
       reason: `The cited evidence does not contain: ${missingFigures.join(', ')}.`,
     };
   }
+  // A claim written mostly in a script the index does not tokenize loses its
+  // words entirely: "Grow 套餐每月 $7.80，不含 GST" reduces to [grow, 7.80, gst],
+  // which overlaps the evidence perfectly while saying the opposite of it. Only
+  // its figures were actually checked, so it cannot be reported as supported.
+  if (!isMostlyLatinScript(claimText)) {
+    return {
+      verdict: 'weak',
+      overlap,
+      matchedFigures,
+      missingFigures,
+      reason:
+        'The claim is not written in the language of the evidence, so only its figures could be checked ' +
+        'against the cited passage; its wording was not verified.',
+    };
+  }
   if (overlap >= SUPPORTED_OVERLAP) {
     return {
       verdict: 'supported',
@@ -126,6 +141,14 @@ export function checkClaim(
     missingFigures,
     reason: 'The cited evidence has little in common with the claim.',
   };
+}
+
+/** True when at least half of the letters in the text are Latin script. */
+export function isMostlyLatinScript(text: string): boolean {
+  const letters = text.match(/\p{L}/gu)?.length ?? 0;
+  if (letters === 0) return true;
+  const latin = text.match(/[A-Za-z\u00C0-\u024F]/g)?.length ?? 0;
+  return latin / letters >= 0.5;
 }
 
 /** Remove inline evidence references such as "(E1)" or "(E1, E3)". */

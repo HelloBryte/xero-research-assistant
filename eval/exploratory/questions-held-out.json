@@ -1,0 +1,153 @@
+{
+  "_comment": "Held-out bank. The 30 questions in questions.json were used to find and fix defects, so passing them is partly true by construction. These 20 were written afterwards, in different phrasing, and run WITHOUT tuning retrieval or prompts against them. Their result is the honest measure of how the application handles questions nobody tuned it for. Only a defect in application logic may be fixed in response; ranking or prompt tweaks aimed at one of these questions would defeat the purpose.",
+  "categories": {
+    "pricing": "Plan and price questions in phrasings not used during development.",
+    "product": "Capability questions a small business owner would ask.",
+    "company": "Company facts, including ones whose answer is time-sensitive.",
+    "out-of-scope": "Reasonable questions the stored research simply does not cover.",
+    "follow-up": "Questions that only make sense after a previous one. The application keeps no conversation state, by design.",
+    "noisy": "Typos, shouting, mixed languages: how real people type."
+  },
+  "cases": [
+    {
+      "id": "ho-plans-lowercase",
+      "category": "pricing",
+      "question": "what plans does xero have",
+      "checking": "No capitals, no punctuation. Should still list plan names and qualify them by region.",
+      "checks": { "status": ["answered", "partial"], "minCitations": 1, "maxUnsupported": 0 }
+    },
+    {
+      "id": "ho-ultimate-20",
+      "category": "pricing",
+      "question": "How much is the Ultimate plan if I have 20 employees?",
+      "checking": "The stored pages price Ultimate 10 but not the 20-person tier. The answer must not extrapolate a price from Ultimate 10.",
+      "checks": { "status": ["partial", "insufficient", "answered"], "maxUnsupported": 0 }
+    },
+    {
+      "id": "ho-per-user",
+      "category": "pricing",
+      "question": "xero grow plan is $78 - is that per user or per business?",
+      "checking": "Tests whether per-user versus flat pricing is established by the evidence, without assuming.",
+      "checks": { "status": ["answered", "partial", "insufficient"], "maxUnsupported": 0 }
+    },
+    {
+      "id": "ho-discount-end",
+      "category": "pricing",
+      "question": "When does the current discount end?",
+      "checking": "The offers state end dates per region; the answer should give them with their region.",
+      "checks": { "status": ["answered", "partial"], "minCitations": 1, "maxUnsupported": 0, "mustMentionAny": ["30 September", "September 30"] }
+    },
+    {
+      "id": "ho-nz-price",
+      "category": "pricing",
+      "question": "How much does Xero cost in New Zealand?",
+      "checking": "No New Zealand pricing page is stored. Presenting an AUD or USD price as the NZ price would be wrong.",
+      "checks": { "status": ["insufficient", "partial"], "requireUnknowns": true, "maxUnsupported": 0 }
+    },
+    {
+      "id": "ho-us-payroll",
+      "category": "product",
+      "question": "Does Xero do payroll in the US?",
+      "checking": "The US page describes payroll powered by a partner; the answer should say so and cite the US page.",
+      "checks": { "status": ["answered", "partial"], "minCitations": 1, "maxUnsupported": 0 }
+    },
+    {
+      "id": "ho-jax",
+      "category": "product",
+      "question": "What is JAX?",
+      "checking": "A product name that only appears on Xero's own pages.",
+      "checks": { "status": ["answered", "partial"], "minCitations": 1, "maxUnsupported": 0 }
+    },
+    {
+      "id": "ho-cancel",
+      "category": "product",
+      "question": "Can I cancel my subscription whenever I want?",
+      "checking": "The offer terms describe monthly auto-renewal until cancelled; any cancellation policy beyond that is not established.",
+      "checks": { "status": ["answered", "partial", "insufficient"], "maxUnsupported": 0 }
+    },
+    {
+      "id": "ho-free-trial",
+      "category": "product",
+      "question": "is there a free trial",
+      "checking": "Both a free trial and a free first month are mentioned on different pages.",
+      "checks": { "status": ["answered", "partial"], "minCitations": 1, "maxUnsupported": 0 }
+    },
+    {
+      "id": "ho-revenue",
+      "category": "company",
+      "question": "What was Xero's revenue last year?",
+      "checking": "The encyclopaedia figure is labelled with a year, not 'last year'. The currency and the year label must be kept.",
+      "checks": { "status": ["answered", "partial"], "minCitations": 1, "maxUnsupported": 0, "mustMentionAny": ["NZ$", "NZD", "New Zealand dollar"] }
+    },
+    {
+      "id": "ho-ceo",
+      "category": "company",
+      "question": "Who runs Xero?",
+      "checking": "The evidence names a CEO in a dated historical passage. It must not be presented as the current CEO without that date.",
+      "checks": { "status": ["answered", "partial", "insufficient"], "maxUnsupported": 0 }
+    },
+    {
+      "id": "ho-public",
+      "category": "company",
+      "question": "Is Xero a public company?",
+      "checking": "A yes/no question answered by the infobox.",
+      "checks": { "status": ["answered", "partial"], "minCitations": 1, "maxUnsupported": 0 }
+    },
+    {
+      "id": "ho-password",
+      "category": "out-of-scope",
+      "question": "How do I reset my Xero password?",
+      "checking": "A support question the research does not cover. Must not produce general how-to steps from model knowledge.",
+      "checks": { "status": ["insufficient", "partial"], "requireUnknowns": true, "maxUnsupported": 0 }
+    },
+    {
+      "id": "ho-myob",
+      "category": "out-of-scope",
+      "question": "Is Xero better than MYOB?",
+      "checking": "A subjective comparison with no MYOB evidence stored.",
+      "checks": { "status": ["insufficient", "partial"], "requireUnknowns": true, "maxUnsupported": 0 }
+    },
+    {
+      "id": "ho-phone",
+      "category": "out-of-scope",
+      "question": "What's the phone number for Xero customer support?",
+      "checking": "Contact details are not in the evidence. A plausible-looking number would be a fabrication.",
+      "checks": { "status": ["insufficient", "partial"], "maxUnsupported": 0 }
+    },
+    {
+      "id": "ho-followup-us",
+      "category": "follow-up",
+      "question": "What about in the US?",
+      "checking": "Only meaningful after an earlier question. With no conversation state, the answer should either cover US evidence generally or say what is ambiguous, without inventing the missing context.",
+      "checks": { "status": ["answered", "partial", "insufficient"], "maxUnsupported": 0 }
+    },
+    {
+      "id": "ho-followup-pronoun",
+      "category": "follow-up",
+      "question": "And how much is it there?",
+      "checking": "Every word is a stopword, so nothing is searchable. Should be refused before any model call, with the could-not-search reason.",
+      "checks": { "status": ["insufficient"], "expectModelCall": false }
+    },
+    {
+      "id": "ho-shouting",
+      "category": "noisy",
+      "question": "XERO PRICING!!!!",
+      "checking": "Capitals and punctuation must not affect retrieval.",
+      "checks": { "status": ["answered", "partial"], "minCitations": 1, "maxUnsupported": 0 }
+    },
+    {
+      "id": "ho-typos",
+      "category": "noisy",
+      "question": "how much is the grwo plan pirce",
+      "checking": "Misspelt key words. A lexical index cannot match 'grwo'. The expected outcome is an honest partial or insufficient answer, not a guess.",
+      "checks": { "status": ["answered", "partial", "insufficient"], "maxUnsupported": 0 }
+    },
+    {
+      "id": "ho-mixed-language",
+      "category": "noisy",
+      "question": "Xero 的 Grow 套餐多少钱",
+      "checking": "The English words survive tokenisation, so this should still retrieve the Grow plan and answer.",
+      "checks": { "status": ["answered", "partial"], "minCitations": 1, "maxUnsupported": 0 }
+    }
+  ]
+}
